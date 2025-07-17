@@ -1,5 +1,3 @@
-# init_project.py
-import os
 from pathlib import Path
 
 # Structura de directoare, unde cheia este directorul si valoarea este o lista de fisiere

@@ -45,10 +45,33 @@ def calculate_power(
     try:
         result = math_service.power(base=req_body.base, exponent=req_body.exponent)
 
-        # Folosim functionalitatea de logare existenta
         log_api_request(
             db=db,
             operation_type="power",
+            input_params=req_body.dict(),
+            result=result,
+            client_ip=request.client.host
+        )
+
+        return {"result": result}
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+@router.post("/factorial", response_model=schemas.MathResponse)
+def calculate_factorial(
+        req_body: schemas.FactorialRequest,
+        request: Request,
+        db: Session = Depends(get_db)
+):
+    """
+    Calculates the factorial of a number.
+    """
+    try:
+        result = math_service.factorial(n=req_body.n)
+
+        log_api_request(
+            db=db,
+            operation_type="factorial",
             input_params=req_body.dict(),
             result=result,
             client_ip=request.client.host
