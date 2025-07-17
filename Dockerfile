@@ -10,6 +10,11 @@ COPY ./requirements.txt /app/requirements.txt
 # Instalam dependintele
 RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 
+# Install sqlite3
+RUN apt-get update && apt-get install -y \
+    sqlite3 \
+    && rm -rf /var/lib/apt/lists/*
+
 # Copiem tot codul sursa al aplicatiei
 COPY ./app /app/app
 
