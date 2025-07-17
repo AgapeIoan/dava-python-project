@@ -32,7 +32,31 @@ def calculate_fibonacci(
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
-# Adauga acest endpoint in math.py
+
+@router.post("/power", response_model=schemas.MathResponse)
+def calculate_power(
+    req_body: schemas.PowerRequest,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """
+    Calculates `base` to the power of `exponent`.
+    """
+    try:
+        result = math_service.power(base=req_body.base, exponent=req_body.exponent)
+
+        log_api_request(
+            db=db,
+            operation_type="power",
+            input_params=req_body.dict(),
+            result=result,
+            client_ip=request.client.host
+        )
+
+        return {"result": result}
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
 @router.post("/factorial", response_model=schemas.MathResponse)
 def calculate_factorial(
         req_body: schemas.FactorialRequest,
@@ -45,7 +69,6 @@ def calculate_factorial(
     try:
         result = math_service.factorial(n=req_body.n)
 
-        # Folosim functionalitatea de logare existenta
         log_api_request(
             db=db,
             operation_type="factorial",

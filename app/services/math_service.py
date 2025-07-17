@@ -2,8 +2,6 @@ import math
 
 
 class MathService:
-    # ... aici vor veni si celelalte metode (power, factorial) ...
-
     def fibonacci(self, n: int) -> int:
         if n < 0:
             raise ValueError("Input for Fibonacci must be a non-negative integer.")
@@ -16,6 +14,12 @@ class MathService:
         for _ in range(n - 1):
             a, b = b, a + b
         return b
+
+    def power(self, base: float, exponent: float) -> float:
+        """Calculates base to the power of exponent."""
+        if base == 0 and exponent < 0:
+            raise ValueError("0 cannot be raised to a negative power.")
+        return math.pow(base, exponent)
 
     def factorial(self, n: int) -> int:
         """Calculates the factorial of a number."""
