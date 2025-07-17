@@ -31,3 +31,29 @@ def calculate_fibonacci(
         return {"result": result}
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+# Adauga acest endpoint in math.py
+@router.post("/factorial", response_model=schemas.MathResponse)
+def calculate_factorial(
+        req_body: schemas.FactorialRequest,
+        request: Request,
+        db: Session = Depends(get_db)
+):
+    """
+    Calculates the factorial of a number.
+    """
+    try:
+        result = math_service.factorial(n=req_body.n)
+
+        # Folosim functionalitatea de logare existenta
+        log_api_request(
+            db=db,
+            operation_type="factorial",
+            input_params=req_body.dict(),
+            result=result,
+            client_ip=request.client.host
+        )
+
+        return {"result": result}
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

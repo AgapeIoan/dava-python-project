@@ -17,6 +17,14 @@ class MathService:
             a, b = b, a + b
         return b
 
+    def factorial(self, n: int) -> int:
+        """Calculates the factorial of a number."""
+        if n < 0:
+            raise ValueError("Factorial is not defined for negative numbers.")
+        # Limitam input-ul pentru a preveni calcule foarte lungi
+        if n > 20:
+            raise ValueError("Input for Factorial is too large. Max supported is 20.")
+        return math.factorial(n)
 
 # Cream o instanta singleton a serviciului pe care o vom folosi in toata aplicatia
 math_service = MathService()
