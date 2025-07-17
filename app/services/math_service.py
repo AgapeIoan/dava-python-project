@@ -17,6 +17,12 @@ class MathService:
             a, b = b, a + b
         return b
 
+    def power(self, base: float, exponent: float) -> float:
+        """Calculates base to the power of exponent."""
+        if base == 0 and exponent < 0:
+            raise ValueError("0 cannot be raised to a negative power.")
+        return math.pow(base, exponent)
+
 
 # Cream o instanta singleton a serviciului pe care o vom folosi in toata aplicatia
 math_service = MathService()
