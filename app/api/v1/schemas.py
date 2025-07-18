@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 
 class MathResponse(BaseModel):
-    result: float
+    result: float|complex
 
 class FibonacciRequest(BaseModel):
     n: int = Field(..., ge=0, le=90, description="The index of the Fibonacci number (0 <= n <= 90).")
