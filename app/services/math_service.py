@@ -1,4 +1,5 @@
 import math
+import sys
 from numbers import Real
 
 
@@ -45,6 +46,26 @@ class MathService:
             raise ValueError(f"Invalid inputs for exponentiation: {e}") from e
         except Exception as e:
             raise ValueError(f"An unexpected error occurred during power calculation: {e}") from e
+
+        if isinstance(result, complex):
+            if abs(result.imag) < 1e-10:
+                real = result.real
+                if abs(real) > sys.float_info.max:
+                    raise OverflowError(
+                        f"Result {real} exceeds maximum float {sys.float_info.max}"
+                    )
+                return real
+            # genuinely complex magnitude check
+            if abs(result) > sys.float_info.max:
+                raise OverflowError(
+                    f"Result magnitude {abs(result)} exceeds maximum float {sys.float_info.max}"
+                )
+        else:
+            # result is a real float
+            if abs(result) > sys.float_info.max:
+                raise OverflowError(
+                    f"Result {result} exceeds maximum float {sys.float_info.max}"
+                )
 
         return result
 

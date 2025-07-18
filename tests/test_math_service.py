@@ -1,3 +1,4 @@
+import sys
 import pytest
 from app.services.math_service import math_service
 
@@ -25,11 +26,46 @@ def test_power_happy_path():
     assert math_service.power(5, -1) == 0.2
     assert math_service.power(10, 0) == 1
 
-
 def test_power_error_cases():
     """Testeaza cazul de eroare 0 la putere negativa."""
     with pytest.raises(ValueError, match="0 cannot be raised to a negative power"):
         math_service.power(0, -1)
+
+def test_power_zero_zero_error():
+    """Testeaza cazul de eroare 0 la puterea 0."""
+    with pytest.raises(ValueError, match="undefined"):
+        math_service.power(0, 0)
+
+def test_negative_base_integer_exponent():
+    """Testeaza baza negativa cu exponent intreg (rezultat real)."""
+    result = math_service.power(-2, 3)
+    assert isinstance(result, float)
+    assert result == -8.0
+
+def test_negative_base_fractional_exponent_complex_result():
+    """Testeaza baza negativa cu exponent fractional → rezultat complex."""
+    result = math_service.power(-1, 0.5)
+    # √(−1) = 1j
+    assert isinstance(result, complex)
+    assert result == pytest.approx(1j)
+
+def test_strip_tiny_imaginary_part():
+    """Testeaza eliminarea partii imaginare foarte mici."""
+    # (2+0j)**2 → 4 (float), nu 4+0j
+    result = math_service.power(2+0j, 2)
+    assert isinstance(result, float)
+    assert result == 4
+
+def test_zero_base_complex_negative_exponent_division_by_zero():
+    """Testeaza prinderea ZeroDivisionError pentru exponent complex negativ."""
+    with pytest.raises(ValueError, match="Division by zero"):
+        math_service.power(0, -1+0j)
+
+def test_overflow_error_for_huge_result():
+    """Testeaza OverflowError cand rezultatul depaseste MAX_FLOAT."""
+    # sys.float_info.max**2 → inf → OverflowError în codul nostru
+    with pytest.raises(OverflowError, match="exceeds maximum float"):
+        math_service.power(sys.float_info.max, 2)
 
 def test_fibonacci_happy_path():
     """Testeaza cazurile normale pentru fibonacci."""
