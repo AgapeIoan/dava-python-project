@@ -7,7 +7,7 @@ def log_api_request(
         *,
         operation_type: str,
         input_params: dict,
-        result: float,
+        result: str,
         client_ip: str | None,
 ) -> models.ApiRequest:
     """

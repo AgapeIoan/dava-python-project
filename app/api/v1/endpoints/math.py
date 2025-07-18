@@ -23,8 +23,8 @@ def calculate_fibonacci(
         log_api_request(
             db=db,
             operation_type="fibonacci",
-            input_params=req_body.dict(),
-            result=result,
+            input_params=req_body.model_dump(),
+            result=str(result),
             client_ip=request.client.host
         )
 
@@ -48,8 +48,8 @@ def calculate_power(
         log_api_request(
             db=db,
             operation_type="power",
-            input_params=req_body.dict(),
-            result=result,
+            input_params=req_body.model_dump(),
+            result=str(result),
             client_ip=request.client.host
         )
 
@@ -72,8 +72,8 @@ def calculate_factorial(
         log_api_request(
             db=db,
             operation_type="factorial",
-            input_params=req_body.dict(),
-            result=result,
+            input_params=req_body.model_dump(),
+            result=str(result),
             client_ip=request.client.host
         )
 
