@@ -17,7 +17,7 @@ class MathService:
             a, b = b, a + b
         return b
 
-    def power(self, base: float, exponent: float) -> float|complex:
+    def power(self, base: float|complex, exponent: float|complex) -> float|complex:
         """Calculates base to the power of exponent."""
 
         if exponent == 0:

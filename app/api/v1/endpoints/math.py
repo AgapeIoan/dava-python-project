@@ -44,7 +44,6 @@ def calculate_power(
     """
     try:
         result = math_service.power(base=req_body.base, exponent=req_body.exponent)
-
         log_api_request(
             db=db,
             operation_type="power",
