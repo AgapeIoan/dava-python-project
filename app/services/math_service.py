@@ -35,9 +35,9 @@ class MathService:
                 # math.pow e mai rapid in C, dar nu suporta baza negativa sau exponesnti reali
                 if base >= 0 or exponent.is_integer():
                     result = math.pow(base, exponent)
-                else:
-                    # ex. (-1) ** 0.5 → complex
-                    result = pow(base, exponent)
+            else:
+                # ex. (-1) ** 0.5 → complex
+                result = pow(base, exponent)
 
         except ZeroDivisionError as e:
             raise ValueError(f"Division by zero in power calculation: {e}") from e
