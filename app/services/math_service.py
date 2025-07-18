@@ -1,4 +1,5 @@
 import math
+from numbers import Real
 
 
 class MathService:
@@ -15,11 +16,37 @@ class MathService:
             a, b = b, a + b
         return b
 
-    def power(self, base: float, exponent: float) -> float:
+    def power(self, base: float, exponent: float) -> float|complex:
         """Calculates base to the power of exponent."""
-        if base == 0 and exponent < 0:
-            raise ValueError("0 cannot be raised to a negative power.")
-        return math.pow(base, exponent)
+
+        if exponent == 0:
+            if base == 0:
+                raise ValueError("0 to the power of 0 is undefined.")
+            return 1
+
+        if base == 0:
+            if isinstance(exponent, Real) and exponent < 0:
+                raise ValueError("0 cannot be raised to a negative power.")
+            return 0
+
+        try:
+            # math.pow e mai rapid in C, dar nu suporta baza negativa sau exponesnti reali
+            if base >= 0 or exponent.is_integer():
+                result = math.pow(base, exponent)
+            else:
+                # ex. (-1) ** 0.5 → complex
+                result = pow(base, exponent)
+
+        except ZeroDivisionError as e:
+            raise ValueError(f"Division by zero in power calculation: {e}") from e
+        except OverflowError as e:
+            raise OverflowError(f"Result is too large: {e}") from e
+        except ValueError as e:
+            raise ValueError(f"Invalid inputs for exponentiation: {e}") from e
+        except Exception as e:
+            raise ValueError(f"An unexpected error occurred during power calculation: {e}") from e
+
+        return result
 
     def factorial(self, n: int) -> int:
         """Calculates the factorial of a number."""
