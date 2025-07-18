@@ -10,7 +10,7 @@ def make_json_serializable(obj):
         return [make_json_serializable(i) for i in obj]
     return obj
 
-def log_api_request(
+async def log_api_request(
         db: Session,
         *,
         operation_type: str,
@@ -31,5 +31,3 @@ def log_api_request(
     db.add(db_request)
     db.commit()
     db.refresh(db_request)
-
-    return db_request

@@ -1,3 +1,5 @@
+import asyncio
+
 from fastapi import APIRouter, Depends, Request, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -20,13 +22,13 @@ def calculate_fibonacci(
     try:
         result = math_service.fibonacci(n=req_body.n)
 
-        log_api_request(
+        asyncio.run(log_api_request(
             db=db,
             operation_type="fibonacci",
             input_params=req_body.model_dump(),
             result=str(result),
             client_ip=request.client.host
-        )
+        ))
 
         return {"result": result}
     except ValueError as e:
@@ -44,13 +46,13 @@ def calculate_power(
     """
     try:
         result = math_service.power(base=req_body.base, exponent=req_body.exponent)
-        log_api_request(
+        asyncio.run(log_api_request(
             db=db,
             operation_type="power",
             input_params=req_body.model_dump(),
             result=str(result),
             client_ip=request.client.host
-        )
+        ))
 
         return {"result": result}
     except ValueError as e:
@@ -68,13 +70,13 @@ def calculate_factorial(
     try:
         result = math_service.factorial(n=req_body.n)
 
-        log_api_request(
+        asyncio.run(log_api_request(
             db=db,
             operation_type="factorial",
             input_params=req_body.model_dump(),
             result=str(result),
             client_ip=request.client.host
-        )
+        ))
 
         return {"result": result}
     except ValueError as e:
