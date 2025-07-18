@@ -26,13 +26,13 @@ class MathService:
             return 1
 
         if base == 0:
-            if isinstance(exponent, Real) and exponent < 0:
+            if exponent < 0:
                 raise ValueError("0 cannot be raised to a negative power.")
             return 0
 
         try:
             if isinstance(base, Real) and isinstance(exponent, Real):
-                # math.pow e mai rapid in C, dar nu suporta baza negativa sau exponesnti reali
+                # math.pow e mai rapid in C, dar nu suporta baza negativa si exponenti fractionari
                 if base >= 0 or exponent.is_integer():
                     result = math.pow(base, exponent)
                 else:
