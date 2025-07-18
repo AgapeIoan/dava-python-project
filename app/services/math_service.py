@@ -27,9 +27,9 @@ class MathService:
 
         if base == 0:
             if isinstance(exponent, Real) and exponent < 0:
-                raise ValueError("0 cannot be raised to a negative power.")
+                raise ValueError("0 cannot be raised to a negative power (Division by zero).")
             if isinstance(exponent, complex) and exponent.real < 0:
-                raise ValueError("0 cannot be raised to a negative complex power.")
+                raise ValueError("Complex exponent with negative real part (Division by zero).")
             return 0
 
         try:
