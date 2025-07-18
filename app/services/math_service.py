@@ -26,8 +26,10 @@ class MathService:
             return 1
 
         if base == 0:
-            if exponent < 0:
+            if isinstance(exponent, Real) and exponent < 0:
                 raise ValueError("0 cannot be raised to a negative power.")
+            if isinstance(exponent, complex) and exponent.real < 0:
+                raise ValueError("0 cannot be raised to a negative complex power.")
             return 0
 
         try:
