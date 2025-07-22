@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, UTC
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.models import ApiKey
 from app.api.v1.schemas import ApiKeyCreate, ApiKeyOut

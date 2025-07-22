@@ -1,4 +1,3 @@
-from traceback import print_tb
 
 import pytest
 import pytest_asyncio  # <--- PASUL 1: Importam pytest_asyncio
