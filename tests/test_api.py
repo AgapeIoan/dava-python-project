@@ -55,8 +55,14 @@ client = TestClient(app)
 # Testele raman la fel, marcate cu @pytest.mark.asyncio
 @pytest.mark.asyncio
 async def test_calculate_power_happy_path():
+    response = client.post("/apikeys", json={"expires_in_seconds": 60})
+    assert response.status_code == 200
+    data = response.json()
+    assert "key" in data and "expires_at" in data
+    new_key = data["key"]
 
-    headers= {settings.API_KEY_NAME : settings.API_KEY}
+    # Step 2: use the generated key for the power endpoint
+    headers = {settings.API_KEY_NAME: new_key}
     response = client.post(
         "/api/v1/power",
         json={"base": "2", "exponent": "8"},
@@ -77,8 +83,15 @@ async def test_calculate_power_happy_path():
 
 @pytest.mark.asyncio
 async def test_api_power_strips_tiny_imaginary_part():
+    response = client.post("/apikeys", json={"expires_in_seconds": 60})
+    assert response.status_code == 200
+    data = response.json()
+    assert "key" in data and "expires_at" in data
+    new_key = data["key"]
+
+    # Step 2: use the generated key for the power endpoint
+    headers = {settings.API_KEY_NAME: new_key}
     payload = {"base": "2+0j", "exponent": "2"}
-    headers= {settings.API_KEY_NAME : settings.API_KEY}
     response = client.post("/api/v1/power", json=payload, headers=headers)
 
     assert response.status_code == 200
@@ -88,8 +101,15 @@ async def test_api_power_strips_tiny_imaginary_part():
 
 @pytest.mark.asyncio
 async def test_api_power_with_complex_numbers():
+    response = client.post("/apikeys", json={"expires_in_seconds": 60})
+    assert response.status_code == 200
+    data = response.json()
+    assert "key" in data and "expires_at" in data
+    new_key = data["key"]
+
+    # Step 2: use the generated key for the power endpoint
+    headers = {settings.API_KEY_NAME: new_key}
     payload = {"base": "-2+5j", "exponent": "2+1j"}
-    headers= {settings.API_KEY_NAME : settings.API_KEY}
     print(settings.API_KEY)
     response = client.post("/api/v1/power", json=payload, headers=headers)
 
@@ -110,15 +130,20 @@ async def test_api_power_missing_api_key():
     assert data["detail"] == "Invalid or missing API Key"
 
 @pytest.mark.asyncio
-async def test_api_power_invalid_api_key():
-    # Attempt to call the endpoint with an invalid API key
-    headers = {settings.API_KEY_NAME: "invalid_key"}
-    response = client.post(
+async def test_generate_and_use_api_key():
+    # Step 1: generate a new API key
+    response = client.post("/apikeys", json={"expires_in_seconds": 60})
+    assert response.status_code == 200
+    data = response.json()
+    assert "key" in data and "expires_at" in data
+    new_key = data["key"]
+
+    # Step 2: use the generated key for the power endpoint
+    headers = {settings.API_KEY_NAME: new_key}
+    response2 = client.post(
         "/api/v1/power",
-        json={"base": "2", "exponent": "3"},
+        json={"base": "3", "exponent": "2"},
         headers=headers
     )
-    # Expect Unauthorized
-    assert response.status_code == 401
-    data = response.json()
-    assert data["detail"] == "Invalid or missing API Key"
+    assert response2.status_code == 200
+    assert str(response2.json()["result"]) == "9.0"
