@@ -6,6 +6,7 @@ from app.db.database import engine, Base
 from starlette_exporter import PrometheusMiddleware, handle_metrics
 from app.core.logging import configure_logging, logger
 from app.api.v1.endpoints import math as math_v1, api_key as key_v1
+from app.services.math_service import redis_client
 
 configure_logging()
 
@@ -19,12 +20,18 @@ async def lifespan(app: FastAPI):
         # await conn.run_sync(Base.metadata.drop_all) # Optional
         await conn.run_sync(Base.metadata.create_all)
     logger.info("Startup: Database tables created.")
+    if redis_client:
+        await redis_client.ping()
+        logger.info("Conexiunea la Redis a fost verificata cu succes.")
 
     yield  # Aplicatia ruleaza intre startup si shutdown
 
     logger.info("Shutdown: Closing resources...")
     await engine.dispose()
     logger.info("Shutdown: Resources closed.")
+    if redis_client:
+        await redis_client.close()
+        logger.info("Conexiunea la Redis a fost inchisa.")
 
 app = FastAPI(
     title=settings.APP_NAME,
