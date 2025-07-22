@@ -6,11 +6,12 @@ from app.api.v1 import schemas
 from app.services.math_service import math_service
 from app.db.repository import log_api_request
 from app.db.database import get_db
-from app.core.logging import logger  # ✅ importăm loggerul structurat
+from app.core.logging import logger
+from app.core.security import get_api_key
 
 router = APIRouter(tags=["Math Operations"])
 
-@router.get("/no-block-async", tags=["Blocking Examples"])
+@router.get("/no-block-async", tags=["Blocking Examples"], dependencies=[Depends(get_api_key)])
 async def no_block_async():
     """
     Simuleaza o operatiune I/O non-blocanta.
@@ -20,8 +21,7 @@ async def no_block_async():
     logger.info("Ieșit din /no-block-async după așteptare.")
     return {"message": "Am asteptat 10 secunde in mod asincron."}
 
-
-@router.post("/fibonacci", response_model=schemas.MathResponse)
+@router.post("/fibonacci", response_model=schemas.MathResponse, dependencies=[Depends(get_api_key)])
 async def calculate_fibonacci(
     req_body: schemas.FibonacciRequest,
     request: Request,
@@ -46,7 +46,7 @@ async def calculate_fibonacci(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
-@router.post("/power", response_model=schemas.MathResponse)
+@router.post("/power", response_model=schemas.MathResponse, dependencies=[Depends(get_api_key)])
 async def calculate_power(
     req_body: schemas.PowerRequest,
     request: Request,
@@ -70,8 +70,7 @@ async def calculate_power(
         logger.error("Eroare la Power", error=str(e))
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
-
-@router.post("/factorial", response_model=schemas.MathResponse)
+@router.post("/factorial", response_model=schemas.MathResponse, dependencies=[Depends(get_api_key)])
 async def calculate_factorial(
     req_body: schemas.FactorialRequest,
     request: Request,
