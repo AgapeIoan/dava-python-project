@@ -8,3 +8,5 @@ aiosqlite
 pytest-asyncio
 redis
 starlette-prometheus
+starlette-exporter
+structlog

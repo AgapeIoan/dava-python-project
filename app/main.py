@@ -3,24 +3,28 @@ from fastapi import FastAPI, Depends
 from app.core.config import settings
 from app.core.security import get_api_key
 from app.db.database import engine, Base
+from starlette_exporter import PrometheusMiddleware, handle_metrics
+from app.core.logging import configure_logging, logger
 from app.api.v1.endpoints import math as math_v1, api_key as key_v1
+
+configure_logging()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
     Context manager to handle application startup and shutdown events.
     """
-    print("Startup: Initializing resources...")
+    logger.info("Startup: Initializing resources...")
     async with engine.begin() as conn:
         # await conn.run_sync(Base.metadata.drop_all) # Optional
         await conn.run_sync(Base.metadata.create_all)
-    print("Startup: Database tables created.")
+    logger.info("Startup: Database tables created.")
 
     yield  # Aplicatia ruleaza intre startup si shutdown
 
-    print("Shutdown: Closing resources...")
+    logger.info("Shutdown: Closing resources...")
     await engine.dispose()
-    print("Shutdown: Resources closed.")
+    logger.info("Shutdown: Resources closed.")
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -28,6 +32,12 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan
 )
+
+# Middleware pentru Prometheus
+app.add_middleware(PrometheusMiddleware)
+
+# Endpointul /metrics
+app.add_route("/metrics", handle_metrics)
 
 # Endpoint de test, pentru a verifica daca serviciul este pornit si functional
 @app.get("/healthcheck", tags=["Monitoring"])
