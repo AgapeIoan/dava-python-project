@@ -1,14 +1,8 @@
+import json
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from . import models
-
-async def make_json_serializable(obj):
-    if isinstance(obj, complex):
-        return {"real": obj.real, "imag": obj.imag}
-    if isinstance(obj, dict):
-        return {k: make_json_serializable(v) for k, v in obj.items()}
-    if isinstance(obj, list):
-        return [make_json_serializable(i) for i in obj]
-    return obj
+from app.core.utils import CustomJSONEncoder
 
 async def log_api_request(
         db: AsyncSession,
@@ -23,7 +17,7 @@ async def log_api_request(
     """
     db_request = models.ApiRequest(
         operation_type=operation_type,
-        input_params=str(make_json_serializable(input_params)),
+        input_params=json.dumps(input_params, cls=CustomJSONEncoder),
         result=result,
         client_ip=client_ip,
     )
