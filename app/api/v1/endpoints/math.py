@@ -29,7 +29,7 @@ async def calculate_fibonacci(
 ):
     logger.info("Calcul Fibonacci solicitat", input=req_body.model_dump())
     try:
-        result = math_service.fibonacci(n=req_body.n)
+        result = await math_service.fibonacci_async(n=req_body.n)
 
         await log_api_request(
             db=db,
@@ -40,7 +40,7 @@ async def calculate_fibonacci(
         )
 
         logger.info("Calcul Fibonacci finalizat", result=result)
-        return {"result": result}
+        return {"result": str(result)}
     except ValueError as e:
         logger.error("Eroare la Fibonacci", error=str(e))
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

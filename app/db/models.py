@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.sql import func
 from .database import Base
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 
 class ApiRequest(Base):
@@ -18,5 +18,5 @@ class ApiKey(Base):
     __tablename__ = "api_keys"
 
     key = Column(String, primary_key=True, default=lambda: uuid.uuid4().hex)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     expires_at = Column(DateTime, nullable=False)

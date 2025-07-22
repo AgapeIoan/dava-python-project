@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
 
 class MathResponse(BaseModel):
@@ -23,5 +23,6 @@ class ApiKeyOut(BaseModel):
     created_at: datetime
     expires_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(
+        from_attributes=True
+    )
