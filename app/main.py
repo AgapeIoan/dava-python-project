@@ -1,8 +1,9 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from app.core.config import settings
+from app.core.security import get_api_key
 from app.db.database import engine, Base
-from app.api.v1.endpoints import math as math_v1
+from app.api.v1.endpoints import math as math_v1, api_key as key_v1
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -35,7 +36,12 @@ def health_check() -> dict[str, str]:
     return {"status": "ok"}
 
 # Includem rutele definite in alt fisier. Momentan, math.py este gol.
-app.include_router(math_v1.router, prefix="/api/v1")
+app.include_router(key_v1.router)
+app.include_router(
+    math_v1.router,
+    prefix="/api/v1",
+    dependencies=[Depends(get_api_key)]
+)
 
 @app.get("/")
 def read_root() -> dict[str, str]:
