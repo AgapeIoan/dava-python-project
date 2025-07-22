@@ -1,6 +1,7 @@
 import sys
 import pytest
 from app.services.math_service import math_service
+from unittest.mock import patch, AsyncMock
 
 def test_factorial_happy_path():
     """Testeaza cazurile normale pentru factorial."""
@@ -85,3 +86,33 @@ def test_fibonacci_error_cases():
     # Testeaza cazul de eroare pentru input prea mare
     with pytest.raises(ValueError, match="Input for Fibonacci is too large"):
         math_service.fibonacci(91)
+
+@pytest.mark.asyncio
+@patch('app.services.math_service.redis_client', new_callable=AsyncMock)
+async def test_fibonacci_async_cache_hit(mock_redis_client):
+    """Testeaza ca functia async returneaza valoarea din cache."""
+    # Arrange: Configuram mock-ul sa returneze o valoare cand .get() e asteptat
+    mock_redis_client.get.return_value = "999"
+
+    # Act: Apelam functia async cu await
+    result = await math_service.fibonacci_async(15)
+
+    # Assert
+    assert result == 999
+    mock_redis_client.get.assert_awaited_once_with("fibonacci:15")
+    mock_redis_client.setex.assert_not_awaited()
+
+@pytest.mark.asyncio
+@patch('app.services.math_service.redis_client', new_callable=AsyncMock)
+async def test_fibonacci_async_cache_miss(mock_redis_client):
+    """Testeaza ca functia async calculeaza si salveaza in cache."""
+    # Arrange
+    mock_redis_client.get.return_value = None
+
+    # Act
+    result = await math_service.fibonacci_async(10)
+
+    # Assert
+    assert result == 55
+    mock_redis_client.get.assert_awaited_once_with("fibonacci:10")
+    mock_redis_client.setex.assert_awaited_once_with("fibonacci:10", 3600, 55)
