@@ -6,3 +6,5 @@ pytest
 httpx
 aiosqlite
 pytest-asyncio
+redis
+starlette-prometheus

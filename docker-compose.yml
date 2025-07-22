@@ -9,3 +9,8 @@ services:
       - ./app:/app/app
     env_file:
       - .env
+
+  redis:
+    image: "redis:alpine"
+    ports:
+      - "6379:6379"
