@@ -96,3 +96,29 @@ async def test_api_power_with_complex_numbers():
     assert response.status_code == 200
     data = response.json()
     assert "j" in data["result"]
+
+@pytest.mark.asyncio
+async def test_api_power_missing_api_key():
+    # Attempt to call the endpoint without any API key header
+    response = client.post(
+        "/api/v1/power",
+        json={"base": "2", "exponent": "3"}
+    )
+    # Expect Unauthorized
+    assert response.status_code == 401
+    data = response.json()
+    assert data["detail"] == "Invalid or missing API Key"
+
+@pytest.mark.asyncio
+async def test_api_power_invalid_api_key():
+    # Attempt to call the endpoint with an invalid API key
+    headers = {settings.API_KEY_NAME: "invalid_key"}
+    response = client.post(
+        "/api/v1/power",
+        json={"base": "2", "exponent": "3"},
+        headers=headers
+    )
+    # Expect Unauthorized
+    assert response.status_code == 401
+    data = response.json()
+    assert data["detail"] == "Invalid or missing API Key"
