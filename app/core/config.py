@@ -6,5 +6,7 @@ class Settings(BaseSettings):
     APP_NAME: str = "Math Microservice"
     DATABASE_URL: str = "sqlite:///./math_service.db"
     API_KEY: str = "super_secret_api_key"
+    REDIS_HOST: str = "redis"
+    REDIS_PORT: int = 6379
 
 settings = Settings()
