@@ -5,8 +5,9 @@ from app.core.security import get_api_key
 from app.db.database import engine, Base
 from starlette_exporter import PrometheusMiddleware, handle_metrics
 from app.core.logging import configure_logging, logger
-configure_logging()
 from app.api.v1.endpoints import math as math_v1, api_key as key_v1
+
+configure_logging()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
