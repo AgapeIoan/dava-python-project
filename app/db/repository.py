@@ -1,7 +1,7 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from . import models
 
-def make_json_serializable(obj):
+async def make_json_serializable(obj):
     if isinstance(obj, complex):
         return {"real": obj.real, "imag": obj.imag}
     if isinstance(obj, dict):
@@ -11,7 +11,7 @@ def make_json_serializable(obj):
     return obj
 
 async def log_api_request(
-        db: Session,
+        db: AsyncSession,
         *,
         operation_type: str,
         input_params: dict,
@@ -29,5 +29,7 @@ async def log_api_request(
     )
 
     db.add(db_request)
-    db.commit()
-    db.refresh(db_request)
+    await db.commit()
+    await db.refresh(db_request)
+
+    return db_request

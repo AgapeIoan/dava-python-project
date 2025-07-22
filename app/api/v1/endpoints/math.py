@@ -10,6 +10,17 @@ from app.db.database import get_db
 
 router = APIRouter(tags=["Math Operations"])
 
+@router.get("/no-block-async", tags=["Blocking Examples"])
+async def no_block_async():
+    """
+    Simuleaza o operatiune I/O non-blocanta.
+    Folosirea `asyncio.sleep()` elibereaza aplicatia sa serveasca alti clienti.
+    """
+    print(">>> Intrat in /no-block-async. Voi astepta 10 secunde fara a bloca.")
+    await asyncio.sleep(10) # CORECT! Cedeaza controlul inapoi la event loop.
+    print("<<< Iesit din /no-block-async.")
+    return {"message": "Am asteptat 10 secunde in mod asincron."}
+
 @router.post("/fibonacci", response_model=schemas.MathResponse)
 def calculate_fibonacci(
         req_body: schemas.FibonacciRequest,

@@ -1,15 +1,31 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from app.core.config import settings
 from app.db.database import engine, Base
 from app.api.v1.endpoints import math as math_v1
 
-# Creeaza tabelele in baza de date (daca nu exista) la pornirea aplicatiei
-Base.metadata.create_all(bind=engine)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    Context manager to handle application startup and shutdown events.
+    """
+    print("Startup: Initializing resources...")
+    async with engine.begin() as conn:
+        # await conn.run_sync(Base.metadata.drop_all) # Optional
+        await conn.run_sync(Base.metadata.create_all)
+    print("Startup: Database tables created.")
+
+    yield  # Aplicatia ruleaza intre startup si shutdown
+
+    print("Shutdown: Closing resources...")
+    await engine.dispose()
+    print("Shutdown: Resources closed.")
 
 app = FastAPI(
     title=settings.APP_NAME,
     description="Un microserviciu pentru operatii matematice, gata pentru productie.",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan
 )
 
 # Endpoint de test, pentru a verifica daca serviciul este pornit si functional
