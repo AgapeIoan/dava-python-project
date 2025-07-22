@@ -1,3 +1,5 @@
+from traceback import print_tb
+
 import pytest
 import pytest_asyncio  # <--- PASUL 1: Importam pytest_asyncio
 from fastapi.testclient import TestClient
@@ -8,6 +10,7 @@ from sqlalchemy.pool import StaticPool
 from app.db.database import Base, get_db
 from app.db.models import ApiRequest
 from app.main import app
+from app.core.config import settings
 
 # Configurarea bazei de date ramane la fel
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
@@ -52,9 +55,12 @@ client = TestClient(app)
 # Testele raman la fel, marcate cu @pytest.mark.asyncio
 @pytest.mark.asyncio
 async def test_calculate_power_happy_path():
+
+    headers= {settings.API_KEY_NAME : settings.API_KEY}
     response = client.post(
         "/api/v1/power",
-        json={"base": "2", "exponent": "8"}
+        json={"base": "2", "exponent": "8"},
+        headers=headers
     )
 
     assert response.status_code == 200
@@ -72,7 +78,8 @@ async def test_calculate_power_happy_path():
 @pytest.mark.asyncio
 async def test_api_power_strips_tiny_imaginary_part():
     payload = {"base": "2+0j", "exponent": "2"}
-    response = client.post("/api/v1/power", json=payload)
+    headers= {settings.API_KEY_NAME : settings.API_KEY}
+    response = client.post("/api/v1/power", json=payload, headers=headers)
 
     assert response.status_code == 200
     data = response.json()
@@ -82,7 +89,9 @@ async def test_api_power_strips_tiny_imaginary_part():
 @pytest.mark.asyncio
 async def test_api_power_with_complex_numbers():
     payload = {"base": "-2+5j", "exponent": "2+1j"}
-    response = client.post("/api/v1/power", json=payload)
+    headers= {settings.API_KEY_NAME : settings.API_KEY}
+    print(settings.API_KEY)
+    response = client.post("/api/v1/power", json=payload, headers=headers)
 
     assert response.status_code == 200
     data = response.json()
