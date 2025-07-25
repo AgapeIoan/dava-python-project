@@ -10,3 +10,7 @@ redis
 starlette-prometheus
 starlette-exporter
 structlog
+passlib
+python-jose
+pydantic[email]
+argon2-cffi>=21.3.0
