@@ -15,7 +15,6 @@ async def test_signup_and_login():
         }
     )
     assert signup_response.status_code == 200
-    token = signup_response.json()["access_token"]
 
     login_response = client.post(
         "/auth/login",
