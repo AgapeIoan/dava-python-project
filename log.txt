@@ -28,3 +28,5 @@
 [2025-07-25T08:42:18.084587] [INFO] Calcul Power finalizat {"result": "1"}
 [2025-07-25T08:42:29.992785] [INFO] Calcul Factorial solicitat {"n": 2}
 [2025-07-25T08:42:29.992785] [INFO] Calcul Factorial solicitat {"n": 2}
+[2025-07-25T09:21:45.245529+00:00] [INFO] Calcul Factorial solicitat {"n": 3}
+[2025-07-25T09:21:45.245529+00:00] [INFO] Calcul Factorial solicitat {"n": 3}
