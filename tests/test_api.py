@@ -1,6 +1,6 @@
 
 import pytest
-import pytest_asyncio  # <--- PASUL 1: Importam pytest_asyncio
+import pytest_asyncio
 from fastapi.testclient import TestClient
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
@@ -10,6 +10,7 @@ from app.db.database import Base, get_db
 from app.db.models import ApiRequest
 from app.main import app
 from app.core.config import settings
+from unittest.mock import patch
 
 # Configurarea bazei de date ramane la fel
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
@@ -51,9 +52,10 @@ async def db_setup_and_teardown():
 client = TestClient(app)
 
 
-# Testele raman la fel, marcate cu @pytest.mark.asyncio
+@patch("app.core.redis_cache.cache")
+@patch("app.core.redis_logger.redis_client")
 @pytest.mark.asyncio
-async def test_calculate_power_happy_path():
+async def test_calculate_power_happy_path(mock_redis_logger, mock_redis_cache, db_setup_and_teardown):
     response = client.post("/apikeys", json={"expires_in_seconds": 60})
     assert response.status_code == 200
     data = response.json()
@@ -78,10 +80,12 @@ async def test_calculate_power_happy_path():
 
     assert log_entry is not None
     assert log_entry.operation_type == "power"
+    mock_redis_logger.xadd.assert_called()
 
-
+@patch("app.core.redis_cache.cache")
+@patch("app.core.redis_logger.redis_client")
 @pytest.mark.asyncio
-async def test_api_power_strips_tiny_imaginary_part():
+async def test_api_power_strips_tiny_imaginary_part(mock_redis_logger, mock_redis_cache, db_setup_and_teardown):
     response = client.post("/apikeys", json={"expires_in_seconds": 60})
     assert response.status_code == 200
     data = response.json()
@@ -97,9 +101,10 @@ async def test_api_power_strips_tiny_imaginary_part():
     data = response.json()
     assert str(data["result"]) == "4.0"
 
-
+@patch("app.core.redis_cache.cache")
+@patch("app.core.redis_logger.redis_client")
 @pytest.mark.asyncio
-async def test_api_power_with_complex_numbers():
+async def test_api_power_with_complex_numbers(mock_redis_logger, mock_redis_cache, db_setup_and_teardown):
     response = client.post("/apikeys", json={"expires_in_seconds": 60})
     assert response.status_code == 200
     data = response.json()
@@ -128,8 +133,10 @@ async def test_api_power_missing_api_key():
     data = response.json()
     assert data["detail"] == "Invalid or missing API Key"
 
+@patch("app.core.redis_cache.cache")
+@patch("app.core.redis_logger.redis_client")
 @pytest.mark.asyncio
-async def test_generate_and_use_api_key():
+async def test_generate_and_use_api_key(mock_redis_logger, mock_redis_cache, db_setup_and_teardown):
     # Step 1: generate a new API key
     response = client.post("/apikeys", json={"expires_in_seconds": 60})
     assert response.status_code == 200
