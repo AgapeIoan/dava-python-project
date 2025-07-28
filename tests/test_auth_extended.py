@@ -1,11 +1,57 @@
 import pytest
+import pytest_asyncio
 from fastapi.testclient import TestClient
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker 
+from sqlalchemy.pool import StaticPool
+from sqlalchemy import delete
+
+from app.db.database import Base, get_db
+from app.db.models import User
 from app.main import app
+
+import os
+
+TEST_DATABASE_FILE = "test.db"
+TEST_DATABASE_URL = f"sqlite+aiosqlite:///{TEST_DATABASE_FILE}"
+
+# Cleanup before running tests
+if os.path.exists(TEST_DATABASE_FILE):
+    os.remove(TEST_DATABASE_FILE)
+
+
+engine = create_async_engine(
+    TEST_DATABASE_URL,
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool,
+)
+
+AsyncTestingSessionLocal = async_sessionmaker(
+    autocommit=False, autoflush=False, bind=engine
+)
+
+async def override_get_db():
+    async with AsyncTestingSessionLocal() as session:
+        yield session
+
+app.dependency_overrides[get_db] = override_get_db
+
+@pytest_asyncio.fixture(scope="function", autouse=True)
+async def db_setup_and_teardown():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
 
 client = TestClient(app)
 
 @pytest.mark.asyncio
 async def test_signup_and_login():
+    # Clean up test user before signup
+    from sqlalchemy import delete
+    async with AsyncTestingSessionLocal() as session:
+        await session.execute(delete(User).where(User.username == "testuser"))
+        await session.commit()
     signup_response = client.post(
         "/auth/signup",
         json={
@@ -71,20 +117,19 @@ async def test_token_expiry_simulation():
 async def test_revoked_user_cannot_create_api_key():
     token = await test_signup_and_login()
 
-    # Simulate user deletion from DB directly
-    from app.db.database import get_db
-    from app.db.models import User
-    from sqlalchemy import delete
+    # Delete user using the same DB session context that FastAPI uses
+    async with AsyncTestingSessionLocal() as session:
+        await session.execute(delete(User).where(User.username == "testuser"))
+        await session.commit()
 
-    async for db in get_db():
-        await db.execute(delete(User).where(User.username == "testuser"))
-        await db.commit()
-        break
-
+    # Attempt to use the token after user was deleted
     response = client.post(
         "/apikeys",
         json={"expires_in_seconds": 3600},
         headers={"Authorization": f"Bearer {token}"}
     )
+
+    print(response.json())  # Debugging line to check response
     assert response.status_code == 401
     assert response.json()["detail"] == "Could not validate credentials"
+

@@ -62,7 +62,9 @@ async def get_current_user(
         raise credentials_exception
 
     result = await db.execute(select(User).where(User.username == token_data.username))
+    print(f"User found: {result}")  # Debugging line to check user retrieval
     user = result.scalar_one_or_none()
+    print(f"Current user: {user}")  # Debugging line to check current user
     if user is None:
         raise credentials_exception
     return user
