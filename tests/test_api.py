@@ -1,13 +1,12 @@
 import pytest
 import pytest_asyncio
-import asyncio
 from fastapi.testclient import TestClient
-from sqlalchemy import select, delete
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from app.db.database import Base, get_db
-from app.db.models import ApiRequest, User
+from app.db.models import ApiRequest
 from app.main import app
 from app.core.config import settings
 
