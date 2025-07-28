@@ -8,17 +8,21 @@ from app.db.repository import log_api_request
 from app.db.database import get_db
 from app.core.logging import logger
 from app.core.security import get_api_key
+from app.core.redis_logger import log_to_stream
+
 
 router = APIRouter(tags=["Math Operations"])
 
 @router.get("/no-block-async", tags=["Blocking Examples"], dependencies=[Depends(get_api_key)])
-async def no_block_async():
-    """
-    Simuleaza o operatiune I/O non-blocanta.
-    """
+async def no_block_async(request: Request):
     logger.info("Intrat în /no-block-async. Încep așteptarea de 10 secunde.")
+    await log_to_stream("INFO", "no-block-async started", {"path": str(request.url)})
+
     await asyncio.sleep(10)
+
     logger.info("Ieșit din /no-block-async după așteptare.")
+    await log_to_stream("INFO", "no-block-async completed", {"path": str(request.url)})
+
     return {"message": "Am asteptat 10 secunde in mod asincron."}
 
 @router.post("/fibonacci", response_model=schemas.MathResponse, dependencies=[Depends(get_api_key)])
@@ -27,6 +31,7 @@ async def calculate_fibonacci(
     request: Request,
     db: Session = Depends(get_db)
 ):
+    await log_to_stream("INFO", "Calcul Fibonacci solicitat", req_body.model_dump())
     logger.info("Calcul Fibonacci solicitat", input=req_body.model_dump())
     try:
         result = await math_service.fibonacci_async(n=req_body.n)
@@ -43,6 +48,7 @@ async def calculate_fibonacci(
         return {"result": str(result)}
     except ValueError as e:
         logger.error("Eroare la Fibonacci", error=str(e))
+        await log_to_stream("ERROR", "Eroare Fibonacci", {"error": str(e)})
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
@@ -52,7 +58,9 @@ async def calculate_power(
     request: Request,
     db: Session = Depends(get_db)
 ):
+    await log_to_stream("INFO", "Calcul Power solicitat", req_body.model_dump())
     logger.info("Calcul Power solicitat", input=req_body.model_dump())
+
     try:
         result = math_service.power(base=req_body.base, exponent=req_body.exponent)
 
@@ -65,9 +73,11 @@ async def calculate_power(
         )
 
         logger.info("Calcul Power finalizat", result=result)
+        await log_to_stream("INFO", "Calcul Power finalizat", {"result": str(result)})
         return {"result": result}
     except ValueError as e:
         logger.error("Eroare la Power", error=str(e))
+        await log_to_stream("ERROR", "Eroare Power", {"error": str(e)})
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 @router.post("/factorial", response_model=schemas.MathResponse, dependencies=[Depends(get_api_key)])
@@ -76,6 +86,7 @@ async def calculate_factorial(
     request: Request,
     db: Session = Depends(get_db)
 ):
+    await log_to_stream("INFO", "Calcul Factorial solicitat", req_body.model_dump())
     logger.info("Calcul Factorial solicitat", input=req_body.model_dump())
     try:
         result = math_service.factorial(n=req_body.n)
@@ -92,4 +103,5 @@ async def calculate_factorial(
         return {"result": result}
     except ValueError as e:
         logger.error("Eroare la Factorial", error=str(e))
+        await log_to_stream("ERROR", "Eroare Factorial", {"error": str(e)})
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

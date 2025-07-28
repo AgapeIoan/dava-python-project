@@ -14,3 +14,14 @@ services:
     image: "redis:alpine"
     ports:
       - "6379:6379"
+
+  log-consumer:
+    build:
+      context: .
+    command: [ "python", "log_consumer.py" ]
+    depends_on:
+      - redis
+    volumes:
+      - .:/app
+    environment:
+      - REDIS_HOST=redis
