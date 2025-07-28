@@ -14,3 +14,6 @@ passlib
 python-jose
 pydantic[email]
 argon2-cffi>=21.3.0
+passlib[argon2,bcrypt]
+python-jose[cryptography]
+python-multipart

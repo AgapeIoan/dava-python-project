@@ -64,7 +64,7 @@ async def test_signup_and_login():
 
     login_response = client.post(
         "/auth/login",
-        json={
+        data={
             "username": "testuser",
             "password": "StrongPassword123"
         }
@@ -78,7 +78,7 @@ async def test_signup_and_login():
 async def test_invalid_login():
     response = client.post(
         "/auth/login",
-        json={
+        data={
             "username": "nonexistent",
             "password": "wrong"
         }
