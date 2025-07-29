@@ -9,5 +9,6 @@ class Settings(BaseSettings):
     API_KEY_NAME: str = "admin_key"
     REDIS_HOST: str = "redis"
     REDIS_PORT: int = 6379
+    SECRET_KEY: str = "your_secret_key"
 
 settings = Settings()
