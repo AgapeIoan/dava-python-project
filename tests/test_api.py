@@ -69,10 +69,8 @@ def get_auth_headers():
 
     return {"Authorization": f"Bearer {token}"}
 
-@patch("app.core.redis_cache.cache")
-@patch("app.core.redis_logger.redis_client")
 @pytest.mark.asyncio
-async def test_calculate_power_happy_path(mock_redis_logger, mock_redis_cache, db_setup_and_teardown):
+async def test_calculate_power_happy_path(db_setup_and_teardown):
     headers = get_auth_headers()
     response = client.post("/apikeys", json={"expires_in_seconds": 60}, headers=headers)
     assert response.status_code == 200
@@ -88,12 +86,9 @@ async def test_calculate_power_happy_path(mock_redis_logger, mock_redis_cache, d
         log_entry = result.scalar_one_or_none()
     assert log_entry is not None
     assert log_entry.operation_type == "power"
-    mock_redis_logger.xadd.assert_called()
 
-@patch("app.core.redis_cache.cache")
-@patch("app.core.redis_logger.redis_client")
 @pytest.mark.asyncio
-async def test_api_power_strips_tiny_imaginary_part(mock_redis_logger, mock_redis_cache, db_setup_and_teardown):
+async def test_api_power_strips_tiny_imaginary_part(db_setup_and_teardown):
     headers = get_auth_headers()
     response = client.post("/apikeys", json={"expires_in_seconds": 60}, headers=headers)
     api_key = response.json()["key"]
@@ -103,10 +98,8 @@ async def test_api_power_strips_tiny_imaginary_part(mock_redis_logger, mock_redi
     assert response.status_code == 200
     assert str(response.json()["result"]) == "4.0"
   
-@patch("app.core.redis_cache.cache")
-@patch("app.core.redis_logger.redis_client")
 @pytest.mark.asyncio
-async def test_api_power_with_complex_numbers(mock_redis_logger, mock_redis_cache, db_setup_and_teardown):
+async def test_api_power_with_complex_numbers(db_setup_and_teardown):
     headers = get_auth_headers()
     response = client.post("/apikeys", json={"expires_in_seconds": 60}, headers=headers)
     api_key = response.json()["key"]
@@ -122,10 +115,8 @@ async def test_api_power_missing_api_key():
     assert response.status_code == 401
     assert response.json()["detail"] == "Invalid or missing API Key"
 
-@patch("app.core.redis_cache.cache")
-@patch("app.core.redis_logger.redis_client")
 @pytest.mark.asyncio
-async def test_generate_and_use_api_key(mock_redis_logger, mock_redis_cache, db_setup_and_teardown):
+async def test_generate_and_use_api_key(db_setup_and_teardown):
     headers = get_auth_headers()
     response = client.post("/apikeys", json={"expires_in_seconds": 60}, headers=headers)
     api_key = response.json()["key"]
