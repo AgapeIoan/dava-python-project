@@ -24,7 +24,11 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    api_keys = relationship("ApiKey", back_populates="user")
+    api_keys = relationship(
+        "ApiKey",
+        back_populates="user",
+        cascade="all, delete-orphan"
+    )
 
 class ApiKey(Base):
     __tablename__ = "api_keys"
@@ -32,6 +36,6 @@ class ApiKey(Base):
     key = Column(String, primary_key=True, default=lambda: uuid.uuid4().hex)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     expires_at = Column(DateTime, nullable=False)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
 
     user = relationship("User", back_populates="api_keys")

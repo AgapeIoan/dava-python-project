@@ -5,7 +5,7 @@ from app.core.security import get_api_key
 from app.db.database import engine, Base
 from starlette_exporter import PrometheusMiddleware, handle_metrics
 from app.core.logging import configure_logging, logger
-from app.api.v1.endpoints import math as math_v1, api_key as key_v1, auth as auth_v1
+from app.api.v1.endpoints import math as math_v1, api_key as key_v1, auth as auth_v1, user as user_v1
 from app.services.math_service import redis_client
 
 configure_logging()
@@ -55,6 +55,7 @@ def health_check() -> dict[str, str]:
 # Includem rutele definite in alt fisier.
 app.include_router(auth_v1.router)
 app.include_router(key_v1.router)
+app.include_router(user_v1.router)
 app.include_router(
     math_v1.router,
     prefix="/api/v1",
