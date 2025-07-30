@@ -88,7 +88,7 @@ def test_fibonacci_error_cases():
         math_service.fibonacci(91)
 
 @pytest.mark.asyncio
-@patch('app.services.math_service.redis_client', new_callable=AsyncMock)
+@patch('app.core.decorators.redis_cache_client', new_callable=AsyncMock)
 async def test_fibonacci_async_cache_hit(mock_redis_client):
     """Testeaza ca functia async returneaza valoarea din cache."""
     # Arrange: Configuram mock-ul sa returneze o valoare cand .get() e asteptat
@@ -98,12 +98,12 @@ async def test_fibonacci_async_cache_hit(mock_redis_client):
     result = await math_service.fibonacci_async(15)
 
     # Assert
-    assert result == 999
+    assert int(result) == 999
     mock_redis_client.get.assert_awaited_once_with("fibonacci:15")
     mock_redis_client.setex.assert_not_awaited()
 
 @pytest.mark.asyncio
-@patch('app.services.math_service.redis_client', new_callable=AsyncMock)
+@patch('app.core.decorators.redis_cache_client', new_callable=AsyncMock)
 async def test_fibonacci_async_cache_miss(mock_redis_client):
     """Testeaza ca functia async calculeaza si salveaza in cache."""
     # Arrange
@@ -115,4 +115,4 @@ async def test_fibonacci_async_cache_miss(mock_redis_client):
     # Assert
     assert result == 55
     mock_redis_client.get.assert_awaited_once_with("fibonacci:10")
-    mock_redis_client.setex.assert_awaited_once_with("fibonacci:10", 3600, 55)
+    mock_redis_client.setex.assert_awaited_once_with("fibonacci:10", 3600, "55")

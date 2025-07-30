@@ -1,46 +1,16 @@
 import math
 import sys
-import redis.asyncio as redis
 from numbers import Real
-from app.core.logging import logger
-from app.core.config import settings
-
-try:
-    redis_client = redis.from_url(
-        f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}",
-        db=0,
-        decode_responses=True
-    )
-    logger.info("Clientul Redis async a fost configurat.")
-except Exception as e:
-    logger.error("Nu s-a putut configura clientul Redis.", error=e)
-    redis_client = None
+from app.core.decorators import cache_result
 
 class MathService:
+    @cache_result(key_prefix="fibonacci")
     async def fibonacci_async(self, n: int) -> int:
-        if not redis_client:
-            logger.warning("Clientul Redis nu este disponibil. Se executa calculul sincron.")
-            # Daca Redis nu e disponibil, folosim o implementare simpla, SINCRONA
-            return self.fibonacci(n) # Apelam o versiune simpla, non-cacheable
-
-        cache_key = f"fibonacci:{n}"
-        
-        # Folosim 'await' pentru operatiunile I/O
-        cached_result = await redis_client.get(cache_key)
-        
-        if cached_result is not None:
-            logger.info("Cache HIT pentru fibonacci", n=n)
-            return int(cached_result)
-
-        logger.info("Cache MISS pentru fibonacci", n=n)
-        
-        # Calculul ramane la fel, este CPU-bound, nu I/O
-        result = self.fibonacci(n)
-            
-        # Folosim 'await' pentru operatiunile I/O
-        await redis_client.setex(cache_key, 3600, result)
-        
-        return result
+        """
+        Calculeaza numarul Fibonacci. Logica de caching este gestionata de decorator.
+        Returneaza rezultatul calculului sincron.
+        """
+        return self.fibonacci(n)
 
     def fibonacci(self, n: int) -> int:
         """Versiunea pur sincronă, CPU-bound, a funcției fibonacci."""
