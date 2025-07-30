@@ -49,7 +49,6 @@ async def test_api_power_missing_api_key(client: AsyncClient):
     response = await client.get("/api/v1/power", params={"base": 2, "exponent": 3})
     assert response.status_code == 401
     assert response.json()["detail"] == "API Key is missing"
-    assert response.json()["detail"] == "API Key is missing"
 
 @pytest.mark.asyncio
 async def test_api_power_invalid_key(client: AsyncClient):
