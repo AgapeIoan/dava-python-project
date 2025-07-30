@@ -1,5 +1,3 @@
-# tests/test_auth_extended.py
-
 import pytest
 from httpx import AsyncClient
 from sqlalchemy import select, delete

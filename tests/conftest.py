@@ -1,4 +1,3 @@
-import pytest
 import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
@@ -29,7 +28,6 @@ async def db_session(engine, setup_database):
         yield session
 
 
-# AICI ESTE MODIFICAREA CHEIE
 @pytest_asyncio.fixture(scope="function")
 async def client(db_session):
     """
@@ -38,13 +36,8 @@ async def client(db_session):
     """
     app.dependency_overrides[get_db] = lambda: db_session
     
-    # Folosim patch ca un context manager in interiorul fixture-ului
-    # Acesta va inlocui clientii Redis pe toata durata de viata a clientului de test
-    with patch("app.core.redis_cache.cache") as mock_redis_cache, \
-         patch("app.core.redis_logger.redis_client") as mock_redis_logger:
-        
-        # Putem configura comportamentul mock-urilor daca este necesar
-        # mock_redis_cache.get.return_value = None
+    with patch("app.core.redis_cache.cache") as _, \
+         patch("app.core.redis_logger.redis_client") as _:
 
         transport = ASGITransport(app=app)
         async with AsyncClient(transport=transport, base_url="http://test") as ac:
