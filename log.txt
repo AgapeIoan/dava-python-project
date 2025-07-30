@@ -1,0 +1,33 @@
+[2025-07-25T08:16:37.730856] [INFO] Calcul Fibonacci solicitat {"n": 90}
+[2025-07-25T08:17:11.740540] [INFO] Calcul Fibonacci solicitat {"n": 90}
+[2025-07-25T08:17:12.349825] [INFO] Calcul Fibonacci solicitat {"n": 90}
+[2025-07-25T08:17:12.502047] [INFO] Calcul Fibonacci solicitat {"n": 90}
+[2025-07-25T08:21:14.270211] [INFO] Calcul Fibonacci solicitat {"n": 90}
+[2025-07-25T08:24:38.354827] [INFO] Calcul Fibonacci solicitat {"n": 90}
+[2025-07-25T08:31:25.225898] [INFO] Calcul Factorial solicitat {"n": 10}
+[2025-07-25T08:31:25.225898] [INFO] Calcul Factorial solicitat {"n": 10}
+[2025-07-25T08:31:32.598790] [INFO] Calcul Factorial solicitat {"n": 10}
+[2025-07-25T08:31:32.598790] [INFO] Calcul Factorial solicitat {"n": 10}
+[2025-07-25T08:31:51.194411] [INFO] Calcul Power solicitat {"base": 20.0, "exponent": 0.0}
+[2025-07-25T08:31:51.194411] [INFO] Calcul Power solicitat {"base": 20.0, "exponent": 0.0}
+[2025-07-25T08:31:51.205464] [INFO] Calcul Power finalizat {"result": "1"}
+[2025-07-25T08:31:51.205464] [INFO] Calcul Power finalizat {"result": "1"}
+[2025-07-25T08:32:05.359970] [INFO] Calcul Power solicitat {"base": 20.0, "exponent": 0.0}
+[2025-07-25T08:32:05.359970] [INFO] Calcul Power solicitat {"base": 20.0, "exponent": 0.0}
+[2025-07-25T08:32:05.371497] [INFO] Calcul Power finalizat {"result": "1"}
+[2025-07-25T08:32:05.371497] [INFO] Calcul Power finalizat {"result": "1"}
+[2025-07-25T08:33:30.785023] [INFO] Calcul Power solicitat {"base": 20.0, "exponent": 0.0}
+[2025-07-25T08:33:30.785023] [INFO] Calcul Power solicitat {"base": 20.0, "exponent": 0.0}
+[2025-07-25T08:33:30.798237] [INFO] Calcul Power finalizat {"result": "1"}
+[2025-07-25T08:33:30.798237] [INFO] Calcul Power finalizat {"result": "1"}
+[2025-07-25T08:41:28.094690] [INFO] Calcul Fibonacci solicitat {"n": 3}
+[2025-07-25T08:41:28.094690] [INFO] Calcul Fibonacci solicitat {"n": 3}
+[2025-07-25T08:42:18.071629] [INFO] Calcul Power solicitat {"base": 2.0, "exponent": 0.0}
+[2025-07-25T08:42:18.071629] [INFO] Calcul Power solicitat {"base": 2.0, "exponent": 0.0}
+[2025-07-25T08:42:18.084587] [INFO] Calcul Power finalizat {"result": "1"}
+[2025-07-25T08:42:18.084587] [INFO] Calcul Power finalizat {"result": "1"}
+[2025-07-25T08:42:29.992785] [INFO] Calcul Factorial solicitat {"n": 2}
+[2025-07-25T08:42:29.992785] [INFO] Calcul Factorial solicitat {"n": 2}
+[2025-07-25T09:21:45.245529+00:00] [INFO] Calcul Factorial solicitat {"n": 3}
+[2025-07-25T09:21:45.245529+00:00] [INFO] Calcul Factorial solicitat {"n": 3}
+[2025-07-30T09:07:19.474645+00:00] [INFO] Calcul Fibonacci solicitat {"n": 90}

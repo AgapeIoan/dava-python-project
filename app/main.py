@@ -17,14 +17,14 @@ async def lifespan(app: FastAPI):
     """
     logger.info("Startup: Initializing resources...")
     async with engine.begin() as conn:
-        # await conn.run_sync(Base.metadata.drop_all) # Optional
+       
         await conn.run_sync(Base.metadata.create_all)
     logger.info("Startup: Database tables created.")
     if redis_client:
         await redis_client.ping()
         logger.info("Conexiunea la Redis a fost verificata cu succes.")
 
-    yield  # Aplicatia ruleaza intre startup si shutdown
+    yield  
 
     logger.info("Shutdown: Closing resources...")
     await engine.dispose()
@@ -40,10 +40,10 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Middleware pentru Prometheus
+#pentru centralizare metrici si monitorizare
 app.add_middleware(PrometheusMiddleware)
 
-# Endpointul /metrics
+
 app.add_route("/metrics", handle_metrics)
 
 # Endpoint de test, pentru a verifica daca serviciul este pornit si functional
@@ -52,7 +52,7 @@ def health_check() -> dict[str, str]:
     """Verifica starea de sanatate a serviciului."""
     return {"status": "ok"}
 
-# Includem rutele definite in alt fisier.
+
 app.include_router(auth_v1.router)
 app.include_router(key_v1.router)
 app.include_router(user_v1.router)
