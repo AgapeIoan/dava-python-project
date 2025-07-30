@@ -6,7 +6,6 @@ from app.db.database import engine, Base
 from starlette_exporter import PrometheusMiddleware, handle_metrics
 from app.core.logging import configure_logging, logger
 from app.api.v1.endpoints import math as math_v1, api_key as key_v1, auth as auth_v1, user as user_v1
-from app.core.redis_logger import redis_client
 
 configure_logging()
 
