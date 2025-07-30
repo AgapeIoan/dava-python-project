@@ -7,6 +7,8 @@ from starlette_exporter import PrometheusMiddleware, handle_metrics
 from app.core.logging import configure_logging, logger
 from app.api.v1.endpoints import math as math_v1, api_key as key_v1, auth as auth_v1, user as user_v1
 import redis.asyncio as redis
+import app.core.redis_logger as redis_logger
+
 configure_logging()
 
 @asynccontextmanager
@@ -27,7 +29,7 @@ async def lifespan(app: FastAPI):
         )
         await client.ping()
         logger.info("✅ Redis logger connection is active.")
-        app.core.redis_logger.redis_client = client
+        redis_logger.redis_client = client
         logger.info("🔁 redis_client has been SET globally.")
     except Exception as e:
         logger.error("❌ Redis logger connection failed.", error=str(e))
