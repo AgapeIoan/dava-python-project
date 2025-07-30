@@ -7,7 +7,7 @@ ASYNC_DATABASE_URL = settings.DATABASE_URL.replace("sqlite://", "sqlite+aiosqlit
 engine = create_async_engine(ASYNC_DATABASE_URL)
 
 AsyncSessionLocal = async_sessionmaker(
-    bind=engine, class_=AsyncSession, expire_on_commit=False
+    bind=engine, class_=AsyncSession, expire_on_commit=False #keeps the data accessible after commit
 )
 
 Base = declarative_base()

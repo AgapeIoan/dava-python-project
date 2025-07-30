@@ -7,13 +7,13 @@ class MathService:
     @cache_result(key_prefix="fibonacci")
     async def fibonacci_async(self, n: int) -> int:
         """
-        Calculeaza numarul Fibonacci. Logica de caching este gestionata de decorator.
-        Returneaza rezultatul calculului sincron.
+        Calculate the Fibonacci number asynchronously. The caching logic is managed by the decorator.
         """
         return self.fibonacci(n)
+    
 
     def fibonacci(self, n: int) -> int:
-        """Versiunea pur sincronă, CPU-bound, a funcției fibonacci."""
+        """ Natural Fibonacci sequence calculation,CPU-bound."""
         if n < 0:
             raise ValueError("Input for Fibonacci must be a non-negative integer.")
         if n > 90:
@@ -25,6 +25,8 @@ class MathService:
             a, b = b, a + b
         return b
 
+
+    
     def power(self, base: float|complex, exponent: float|complex) -> float|complex:
         """Calculates base to the power of exponent."""
 
@@ -82,7 +84,11 @@ class MathService:
                 )
 
         return result
-
+    
+    @cache_result(key_prefix="factorial", ttl=86400)
+    async def factorial_async(self, n: int) -> int:
+        return self.factorial(n)
+    
     def factorial(self, n: int) -> int:
         """Calculates the factorial of a number."""
         if n < 0:

@@ -6,14 +6,14 @@ from redis.exceptions import RedisError
 REDIS_STREAM_KEY = "log_stream"
 LOG_FILE = "log.txt"
 
-# ✅ Folosim variabilă de mediu pentru flexibilitate (localhost vs redis)
+#  Folosim variabilă de mediu pentru flexibilitate (localhost vs redis)
 redis_host = os.getenv("REDIS_HOST", "localhost")
 
 async def consume_logs():
     print("log_consumer.py- flux activat")
     
     try:
-        client = redis.Redis(host=redis_host, port=6379, decode_responses=True)
+        client = redis.Redis(host=redis_host, port=6379,db=1, decode_responses=True)
         last_id = "0"
         wait_time = 2
         print(f"Conectat la Redis Stream:({redis_host}:6379). Ascultare loguri activata:.\n")

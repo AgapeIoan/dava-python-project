@@ -2,11 +2,11 @@ import json
 
 class CustomJSONEncoder(json.JSONEncoder):
     """
-    Un encoder JSON custom care stie sa serializeze obiecte de tip 'complex'.
+    #Custom JSON Encoder for complex numbers.
     """
     def default(self, o):
         if isinstance(o, complex):
-            # Convertim numarul complex intr-un string, formatul standard
+            #Converts complex numbers to a string representation
             return str(o).replace("(", "").replace(")", "")
-        # Pentru orice alt tip, lasam implementarea de baza sa se ocupe
+        #For any other type, we let the base implementation handle it
         return super().default(o)
