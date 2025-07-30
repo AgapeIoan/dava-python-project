@@ -1,9 +1,8 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from datetime import datetime, timezone
 from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.sql import func
 from .database import Base
-from datetime import datetime, timezone
-import uuid
 
 class ApiRequest(Base):
     __tablename__ = "api_requests"
@@ -23,19 +22,20 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-
-    api_keys = relationship(
-        "ApiKey",
-        back_populates="user",
-        cascade="all, delete-orphan"
-    )
+    api_keys = relationship("ApiKey", back_populates="user", cascade="all, delete-orphan")
 
 class ApiKey(Base):
     __tablename__ = "api_keys"
 
-    key = Column(String, primary_key=True, default=lambda: uuid.uuid4().hex)
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
-    expires_at = Column(DateTime, nullable=False)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    id = Column(Integer, primary_key=True, index=True)
+    
+    key_prefix = Column(String, unique=True, index=True, nullable=False)
+    
+    hashed_key = Column(String, nullable=False)
+    
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    expires_at = Column(DateTime(timezone=True), nullable=False)
 
     user = relationship("User", back_populates="api_keys")
+    
