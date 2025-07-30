@@ -1,4 +1,5 @@
 import json
+from passlib.context import CryptContext
 
 class CustomJSONEncoder(json.JSONEncoder):
     """
@@ -10,8 +11,6 @@ class CustomJSONEncoder(json.JSONEncoder):
             return str(o).replace("(", "").replace(")", "")
         # Pentru orice alt tip, lasam implementarea de baza sa se ocupe
         return super().default(o)
-    
-from passlib.context import CryptContext
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
