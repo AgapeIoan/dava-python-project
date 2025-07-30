@@ -6,7 +6,7 @@ from app.db.database import engine, Base
 from starlette_exporter import PrometheusMiddleware, handle_metrics
 from app.core.logging import configure_logging, logger
 from app.api.v1.endpoints import math as math_v1, api_key as key_v1, auth as auth_v1, user as user_v1
-
+import redis.asyncio as redis
 configure_logging()
 
 @asynccontextmanager
@@ -20,7 +20,7 @@ async def lifespan(app: FastAPI):
 
     # Redis logger (db=1)
     try:
-        client = redis_module.from_url(
+        client = redis.from_url(
             f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}",
             db=1,
             decode_responses=True
