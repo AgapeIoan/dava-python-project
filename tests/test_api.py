@@ -9,7 +9,6 @@ from app.db.database import Base, get_db
 from app.db.models import ApiRequest
 from app.main import app
 from app.core.config import settings
-from unittest.mock import patch
 
 # Use in-memory SQLite database for testing
 import os
