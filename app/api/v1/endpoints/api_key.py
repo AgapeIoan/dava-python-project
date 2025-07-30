@@ -1,46 +1,52 @@
-from datetime import datetime, timedelta, UTC
-from fastapi import APIRouter, Depends
-import json
 import secrets
-import uuid
+
+from datetime import datetime, timezone, timedelta
+from fastapi import APIRouter, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import delete
+from app.db.models import ApiKey
+from app.db.database import get_db
+from app.core.security import get_api_key_hash
 from app.api.v1.schemas import ApiKeyCreate, ApiKeyOut
 from app.core.security import get_current_user
 from app.db.models import User
-from app.services.math_service import redis_client
-from app.core.utils import hash_api_key
 
 router = APIRouter(prefix="/apikeys", tags=["apikeys"])
 
 @router.post("", response_model=ApiKeyOut)
 async def create_api_key(
     payload: ApiKeyCreate,
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    """
+    Genereaza o noua cheie API pentru utilizatorul autentificat.
+    Daca o cheie exista deja, va fi inlocuita. Cheia secreta este afisata o singura data.
+    """
+    await db.execute(delete(ApiKey).where(ApiKey.user_id == current_user.id))
 
-    expires_at = datetime.now(UTC) + timedelta(seconds=payload.expires_in_seconds)
-    created_at = datetime.now(UTC)
+    prefix = f"math_{secrets.token_urlsafe(8)}"
+    secret_key = secrets.token_urlsafe(32)
+    
+    full_key_to_display = f"{prefix}.{secret_key}"
 
-    key_id = uuid.uuid4().hex
-    raw_key = secrets.token_urlsafe(32)
-    api_key = f"{key_id}.{raw_key}"
+    hashed_secret = get_api_key_hash(secret_key)
 
-    hashed_key = hash_api_key(raw_key)
-    redis_key = f"apikey:{key_id}"
-    value = json.dumps({
-        "hash": hashed_key,
-        "expires_at": expires_at.isoformat()
-    })
-    if redis_client:
-        # Enforce one valid API key per user
-        user_key_map = f"user_apikey:{current_user.id}"
-        old_key_id = await redis_client.get(user_key_map)
-        if old_key_id:
-            await redis_client.delete(f"apikey:{old_key_id}")
-        await redis_client.set(redis_key, value, ex=payload.expires_in_seconds)
-        await redis_client.set(user_key_map, key_id, ex=payload.expires_in_seconds)
+    expires_at = datetime.now(timezone.utc) + timedelta(seconds=payload.expires_in_seconds)
+    new_api_key = ApiKey(
+        key_prefix=prefix,
+        hashed_key=hashed_secret,
+        user_id=current_user.id,
+        expires_at=expires_at,
+        created_at=datetime.now(timezone.utc),
+    )
+
+    db.add(new_api_key)
+    await db.commit()
+    await db.refresh(new_api_key)
 
     return ApiKeyOut(
-        key=api_key,
-        created_at=created_at,
-        expires_at=expires_at
+        key=full_key_to_display,
+        created_at=new_api_key.created_at,
+        expires_at=new_api_key.expires_at
     )
