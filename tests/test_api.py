@@ -13,6 +13,7 @@ async def test_calculate_power_happy_path(client: AsyncClient, api_key_headers: 
         json={"base": "2", "exponent": "8"},
         headers=api_key_headers,
     )
+    response = await client.get("/api/v1/power", params={"base": 2, "exponent": 8}, headers=api_key_headers)
     assert response.status_code == 200
     assert str(response.json()["result"]) == "256.0"
 
@@ -28,6 +29,7 @@ async def test_api_power_strips_tiny_imaginary_part(client: AsyncClient, api_key
     response = await client.post(
         "/api/v1/power", json=payload, headers=api_key_headers
     )
+    response = await client.get("/api/v1/power", params={"base": "2", "exponent": "2"}, headers=api_key_headers)
     assert response.status_code == 200
     assert str(response.json()["result"]) == "4.0"
 
@@ -37,19 +39,20 @@ async def test_api_power_with_complex_numbers(client: AsyncClient, api_key_heade
     response = await client.post(
         "/api/v1/power", json=payload, headers=api_key_headers
     )
+    response = await client.get("/api/v1/power", params={"base": "-2+5j", "exponent": "2+1j"}, headers=api_key_headers)
     assert response.status_code == 200
     assert "j" in response.json()["result"]
 
 @pytest.mark.asyncio
 async def test_api_power_missing_api_key(client: AsyncClient):
     response = await client.post("/api/v1/power", json={"base": "2", "exponent": "3"})
+    response = await client.get("/api/v1/power", params={"base": 2, "exponent": 3})
     assert response.status_code == 401
-    # Mesajul corect din security.py este "API Key is missing"
     assert response.json()["detail"] == "API Key is missing"
 
 @pytest.mark.asyncio
 async def test_api_power_invalid_key(client: AsyncClient):
     headers = {"X-API-Key": "invalid_key_format"}
-    response = await client.post("/api/v1/power", json={"base": "2", "exponent": "3"}, headers=headers)
+    response = await client.get("/api/v1/power", params={"base": "2", "exponent": "3"}, headers=headers)
     assert response.status_code == 403 # Forbidden, deoarece formatul e gresit
     assert response.json()["detail"] == "Invalid API Key format"
