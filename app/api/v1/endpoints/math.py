@@ -1,4 +1,3 @@
-import asyncio
 from fastapi import APIRouter, Depends, Request, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -12,18 +11,6 @@ from app.core.redis_logger import log_to_stream
 
 
 router = APIRouter(tags=["Math Operations"])
-
-@router.get("/no-block-async", tags=["Blocking Examples"], dependencies=[Depends(get_api_key)])
-async def no_block_async(request: Request):
-    logger.info("Intrat în /no-block-async. Încep așteptarea de 10 secunde.")
-    await log_to_stream("INFO", "no-block-async started", {"path": str(request.url)})
-
-    await asyncio.sleep(10)
-
-    logger.info("Ieșit din /no-block-async după așteptare.")
-    await log_to_stream("INFO", "no-block-async completed", {"path": str(request.url)})
-
-    return {"message": "Am asteptat 10 secunde in mod asincron."}
 
 @router.get("/fibonacci", response_model=schemas.MathResponse, dependencies=[Depends(get_api_key)])
 async def calculate_fibonacci(
@@ -98,7 +85,7 @@ async def calculate_factorial(
     await log_to_stream("INFO", "Calcul Factorial solicitat", {"n": n})
     logger.info("Calcul Factorial solicitat", input={"n": n})
     try:
-        result = math_service.factorial(n=n)
+        result = await math_service.factorial_async(n=n)
 
         await log_api_request(
             db=db,

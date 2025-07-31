@@ -1,75 +1,220 @@
-# endava-python-project
+# 🧞 Math Microservice
 
-# MATH MICROSERVICE – PROIECT DE TEMA
-
-## RESPECTAREA CERINTEI
-
-Acest microserviciu a fost dezvoltat in conformitate cu cerinta temei, respectand toate punctele esentiale:
-
-- Microserviciu REST (fara SOAP)
-- Operatii matematice implementate: fibonacci, factorial, putere
-- Persistenta cererilor in baza de date (SQLite)
-- Validare input cu Pydantic
-- Structura modulara conform principiilor MVC
-- Implementare functionala, fara dependente complexe
-- Cod organizat si verificat cu `flake8`, insotit de teste
-- Executabil local prin comanda `docker compose up`
-
-Pe langa aceste cerinte de baza, proiectul atinge si mai multe dintre elementele optionale recomandate.
+## Author names
+* 👨‍💻Agape Ioan, Data Engineer
+* 👨‍💻Munteanu Daniela, Data Engineer
+* 👨‍💻Uliuliuc Serafim, Data Engineer
 
 ---
 
-## DESCRIEREA APLICATIEI
-
-Aplicatia este un microserviciu REST care permite calculul urmatoarelor operatii:
-
-- **Fibonacci** – calculeaza al `n`-lea numar din sirul Fibonacci (limitat pentru a evita overflow)
-- **Factorial** – calculeaza factorialul unui numar intreg nenegativ (cu validare stricta)
-- **Putere (`a^b`)** – calculeaza ridicarea la putere, cu suport pentru numere reale si complexe
-
-Rezultatul fiecarei cereri este inregistrat in baza de date, impreuna cu parametrii folositi, tipul operatiei si IP-ul clientului.
+A production-ready, containerized microservice built with **FastAPI**, designed to perform secure and observable mathematical computations: **power, Fibonacci, and factorial**. The system leverages **Redis for caching and streaming logs**, uses **JWT and API keys for security**, and integrates **Prometheus** for monitoring.
 
 ---
 
-## TEHNOLOGII FOLOSITE
+## ✅ Requirements Coverage
 
-- **FastAPI** – framework web asincron, rapid si usor de folosit
-- **SQLite** – baza de date usoara si portabila, ideala pentru prototipuri si testare
-- **SQLAlchemy (async)** – ORM pentru interactiune eficienta cu baza de date
-- **Pydantic** – validare declarativa si clara a datelor
-- **Uvicorn** – server ASGI de productie
-- **Pytest / pytest-asyncio** – testare unitara si integrata
-- **Docker & Docker Compose** – rulare containerizata, fara dependente locale
-- **Logging** – sistem de loguri pentru cereri si erori
-- **Autorizare** – filtrare acces la API prin chei de autentificare
+### Core Features
+* `pow` operation →  implemented via `/api/v1/power`
+* `n-th Fibonacci number` →  via `/api/v1/fibonacci`
+* `factorial of number` →  via `/api/v1/factorial`
+* Request persistence → audit saved in `api_requests` DB table
+* REST API →  built with FastAPI (OpenAPI 3.1 spec)
+* Database →  SQLite + SQLAlchemy (async)
 
----
+### Nice to Haves
 
-## STRUCTURA PROIECTULUI
-
-Proiectul este structurat pe module separate, cu responsabilitati clare:
-
-- `main.py` – initializeaza aplicatia si rutele
-- `math.py` – defineste endpoint-urile matematice
-- `schemas.py` – contine clasele Pydantic pentru validare
-- `models.py` – defineste modelul bazei de date pentru logarea cererilor
-- `repository.py` – operatii de salvare asincrona
-- `config.py` – incarca configuratii din fisier `.env`
-- `utils.py` – serializator JSON pentru numere complexe
-- `database.py` – configureaza conexiunea asincrona la SQLite
-- `test_*.py` – teste functionale si unitare
-- `Dockerfile` si `docker-compose.yml` – permit rularea aplicatiei in containere
+* Containerization →  via Docker & `docker-compose`
+* Monitoring →  Prometheus `/metrics` exposed via middleware
+* Caching →  Redis with `@cache_result` decorator
+* Authorization →  JWT + API Key protection
+* Logging →  Redis Streams (structured JSON)
 
 ---
 
-## CUM SE FOLOSESTE
+## 📂 Project Structure
 
-1. Asigurare Docker instalat
-2. Rulare:
-   ```bash
-   docker compose up --build
-3.Acceseaza aplicatia in browser:
-  http://localhost:8000/docs
-4.Pentru testare (in afara containerului):
-  pytest
+| Path                 | Description                                       |
+| -------------------- | ------------------------------------------------- |
+| `main.py`            | App entrypoint: sets up DB, Redis, metrics        |
+| `api/v1/endpoints/`  | Route modules: `math`, `auth`, `users`, `apikeys` |
+| `core/`              | Logging, config, decorators, Redis, security      |
+| `db/`                | Database models, session, repository              |
+| `services/`          | Business logic for math operations                |
+| `schemas.py`         | Pydantic models for request/response              |
+| `Dockerfile`         | Container spec for the app                        |
+| `docker-compose.yml` | Redis + App composition                           |
+| `.env`               | Environment variables                             |
+
+---
+
+## Math Endpoints
+
+| Route               | Description                                  |
+| ------------------- | -------------------------------------------- |
+| `/api/v1/fibonacci` | `GET`, returns Fibonacci number at index `n` |
+| `/api/v1/power`     | `GET`, computes exponentiation (complex OK)  |
+| `/api/v1/factorial` | `GET`, returns `n!`                          |
+
+All endpoints are **secured** using:
+* 🔐 Bearer Token (JWT)
+* 🔑 `X-API-Key` header
+---
+
+## 🔒 Security
+| Mechanism | Used for                  | Implementation                 |
+| --------- | ------------------------- | ------------------------------ |
+| JWT       | Authenticated user access | `/auth/login`, `/auth/signup`  |
+| API Key   | Protected route access    | `/apikeys` generation per user |
+
+Passwords are hashed using `argon2`.
+All keys are hashed and stored securely.
+---
+
+## ♻️ Caching with Redis
+Results of heavy computations are cached:
+
+| Operation | TTL      | Storage      |
+| --------- | -------- | ------------ |
+| Fibonacci | 1 hour   | Redis (DB 0) |
+| Factorial | 24 hours | Redis (DB 0) |
+
+> Cache logic is abstracted via `@cache_result`, allowing easy reuse.
+---
+
+## Logging with Redis Streams
+
+Each API event is logged to a Redis Stream (`log_stream`) with structured entries:
+
+```json
+{
+  "timestamp": "...",
+  "level": "INFO",
+  "message": "Power calculated",
+  "extra": {
+    "base": "2",
+    "exponent": "10"
+  }
+}
+```
+These logs can be consumed in real-time or analyzed externally (ELK, Logstash, etc.)
+---
+
+##  Monitoring
+Integrated with **Prometheus** via:
+
+```http
+GET /metrics
+```
+
+The app includes:
+
+* Request count
+* Response status codes
+* Latency metrics
+
+Use `docker-compose` to spin up both Redis and the app for full observability.
+
+---
+
+## Persistence Layer
+* Uses **SQLAlchemy async ORM**
+* Models:
+
+  * `User`: auth user
+  * `ApiKey`: hashed API keys per user
+  * `ApiRequest`: audit log per API call
+* Audit includes input params, result, client IP
+
+---
+
+
+#### 1. Build and start:
+```bash
+docker-compose up --build
+```
+
+#### 2. Access:
+
+* Docs: [http://localhost:8000/docs](http://localhost:8000/docs)
+* Metrics: [http://localhost:8000/metrics](http://localhost:8000/metrics)
+
+---
+
+## 🔐 Example `.env`
+
+```dotenv
+APP_NAME=Math Microservice
+DATABASE_URL=sqlite:///./math_service.db
+API_KEY=super_secret_api_key
+API_KEY_NAME=admin_key
+REDIS_HOST=redis
+REDIS_PORT=6379
+SECRET_KEY=your_super_secure_key
+```
+
+---
+
+## 📦 Dependencies (requirements.txt)
+
+Key packages used:
+
+* `fastapi`, `uvicorn[standard]`
+* `sqlalchemy`, `aiosqlite`
+* `pydantic-settings`, `python-jose`, `passlib[argon2]`
+* `redis`, `structlog`
+* `starlette-exporter`, `prometheus`
+* `pytest`, `httpx`, `pytest-asyncio`
+
+---
+
+##  Technologies Used
+
+| Category         | Technology                      |
+| ---------------- | ------------------------------- |
+| Web Framework    | FastAPI                         |
+| Web Server       | Uvicorn (ASGI)                  |
+| ORM              | SQLAlchemy (Async)              |
+| Database         | SQLite                          |
+| Caching          | Redis (via `redis.asyncio`)     |
+| Logging          | Structlog (JSON), Redis Streams |
+| Monitoring       | Starlette Exporter (Prometheus) |
+| Auth             | JWT (via python-jose), API Keys |
+| Password Hashing | Argon2 (via passlib)            |
+| Serialization    | Pydantic                        |
+| Configuration    | pydantic-settings               |
+| Testing          | Pytest, httpx, pytest-asyncio   |
+| Containerization | Docker, docker-compose          |
+
+---
+
+##  Assignment Mapping
+
+| Requirement                                | Status |
+| ------------------------------------------ | ------ |
+| Math operations: pow, fibonacci, factorial | ✅      |
+| Persist requests to DB                     | ✅      |
+| Expose as REST API                         | ✅      |
+| Production-ready design                    | ✅      |
+| Micro framework (Flask-like)               | ✅      |
+| Follow MVCS, modular structure             | ✅      |
+| Use SQL/NoSQL (SQLite OK)                  | ✅      |
+| Containerization                           | ✅      |
+| Caching                                    | ✅      |
+| Authorization                              | ✅      |
+| Logging via streaming (Redis Stream)       | ✅      |
+| Monitoring (Prometheus)                    | ✅      |
+
+---
+
+## 👨 Author Notes
+
+This project is fully functional, extensible, and designed using clean architecture principles. It is suitable for:
+
+* learning how to build production-grade FastAPI services
+* designing testable microservices
+* integrating Redis, Prometheus, and structured logs
+* demonstrating best practices in modern Python API development
+
+---
+
 

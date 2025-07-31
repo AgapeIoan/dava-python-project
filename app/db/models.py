@@ -4,7 +4,7 @@ from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.sql import func
 from .database import Base
 
-class ApiRequest(Base):
+class ApiRequest(Base): #audit of API requests
     __tablename__ = "api_requests"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -37,5 +37,5 @@ class ApiKey(Base):
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     expires_at = Column(DateTime(timezone=True), nullable=False)
 
-    user = relationship("User", back_populates="api_keys")
+    user = relationship("User", back_populates="api_keys") # 1 to 1 relationship with User
     

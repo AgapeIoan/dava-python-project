@@ -6,16 +6,17 @@ from redis.exceptions import RedisError
 REDIS_STREAM_KEY = "log_stream"
 LOG_FILE = "log.txt"
 
-# ✅ Folosim variabilă de mediu pentru flexibilitate (localhost vs redis)
+#  Folosim variabilă de mediu pentru flexibilitate (localhost vs redis)
 redis_host = os.getenv("REDIS_HOST", "localhost")
 
 async def consume_logs():
-    print("✅ log_consumer.py A PORNIT!")
-
+    print("log_consumer.py- flux activat")
+    
     try:
-        client = redis.Redis(host=redis_host, port=6379, decode_responses=True)
+        client = redis.Redis(host=redis_host, port=6379,db=1, decode_responses=True)
         last_id = "0"
-        print(f"👂 Conectat la Redis ({redis_host}:6379). Ascultăm logurile...\n")
+        wait_time = 2
+        print(f"Conectat la Redis Stream:({redis_host}:6379). Ascultare loguri activata:.\n")
 
         while True:
             try:
@@ -30,7 +31,7 @@ async def consume_logs():
                         )
 
                         # ✅ Afișează în terminal
-                        print("🧾 Log primit:")
+                        print("*Log primit:")
                         print(log_line)
                         print("-" * 60)
 
@@ -41,11 +42,12 @@ async def consume_logs():
                         last_id = msg_id
 
             except RedisError as e:
-                print(f"❌ Eroare la citirea din Redis: {e}")
-                await asyncio.sleep(2)
+                print(f"❌Eroare la citirea din Redis: {e}")
+                await asyncio.sleep(wait_time)
+                wait_time = min(wait_time * 2, 60)  # backoff exponential
 
     except Exception as e:
-        print(f"🚨 Eroare generală în log_consumer.py: {e}")
+        print(f"❌Eroare generală în log_consumer.py: {e}")
 
 if __name__ == "__main__":
     asyncio.run(consume_logs())
