@@ -47,12 +47,12 @@ async def test_api_power_with_complex_numbers(client: AsyncClient, api_key_heade
 async def test_api_power_missing_api_key(client: AsyncClient):
     response = await client.post("/api/v1/power", json={"base": "2", "exponent": "3"})
     response = await client.get("/api/v1/power", params={"base": 2, "exponent": 3})
-    assert response.status_code == 401
+    assert response.status_code == 400
     assert response.json()["detail"] == "API Key is missing"
 
 @pytest.mark.asyncio
 async def test_api_power_invalid_key(client: AsyncClient):
     headers = {"X-API-Key": "invalid_key_format"}
     response = await client.get("/api/v1/power", params={"base": "2", "exponent": "3"}, headers=headers)
-    assert response.status_code == 403 # Forbidden, deoarece formatul e gresit
+    assert response.status_code == 400
     assert response.json()["detail"] == "Invalid API Key format"

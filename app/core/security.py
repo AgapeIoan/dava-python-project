@@ -10,10 +10,7 @@ from app.db.database import get_db
 from app.api.v1.schemas import TokenData
 from app.core.config import settings
 from app.db.models import ApiKey
-
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
-REFRESH_TOKEN_EXPIRE_MINUTES = 7 * 24 * 60
+from app.core.logging import logger
 
 pwd_context = CryptContext(
     schemes=["argon2", "bcrypt"],
@@ -37,9 +34,9 @@ def create_access_token(
     to_encode = data.copy()
     now = datetime.now(timezone.utc)
     to_encode.update({"iat": now, "iss": "your-api-name", "sub": data.get("sub")})
-    expire = now + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+    expire = now + (expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))
     to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
+    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
@@ -51,7 +48,7 @@ async def get_current_user(
         headers={"WWW-Authenticate": "Bearer"}
     )
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM], options={"require": ["exp", "sub", "iat"]})
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM], options={"require": ["exp", "sub", "iat"]})
         username: str = payload.get("sub")
         if username is None:
             raise credentials_exception
@@ -60,11 +57,13 @@ async def get_current_user(
         raise credentials_exception
 
     result = await db.execute(select(User).where(User.username == token_data.username))
-    print(f"User found: {result}")  # Debugging line to check user retrieval
+    
     user = result.scalar_one_or_none()
-    print(f"Current user: {user}")  # Debugging line to check current user
+
     if user is None:
+        logger.error("Failed to retrieve user", username=token_data.username)
         raise credentials_exception
+    logger.info("Current user retrieved", username=user.username)
     return user
 
 async def get_api_key(
@@ -74,36 +73,33 @@ async def get_api_key(
     """
     Valideaza o cheie API. Gaseste cheia dupa prefix si verifica hash-ul partii secrete.
     """
-    print(f"[DEBUG] get_api_key: api_key_str primit = {api_key_str}")
     if not api_key_str:
-        print("[DEBUG] get_api_key: lipseste cheia API")
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "API Key is missing")
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "API Key is missing")
 
     try:
         prefix, secret_key = api_key_str.rsplit(".", 1)
-        print(f"[DEBUG] get_api_key: prefix = {prefix}, secret_key = {secret_key}")
     except ValueError:
-        print("[DEBUG] get_api_key: format invalid pentru cheia API")
-        raise HTTPException(status.HTTP_403_FORBIDDEN, "Invalid API Key format")
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid API Key format")
 
     result = await db.execute(select(ApiKey).where(ApiKey.key_prefix == prefix))
     record = result.scalar_one_or_none()
-    print(f"[DEBUG] get_api_key: record gasit in DB = {record}")
 
     if not record:
+        logger.error("Record not found for API Key", api_key=api_key_str)
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Invalid or expired API Key")
 
     now_aware = datetime.now(timezone.utc)
     expires_at_aware = record.expires_at.replace(tzinfo=timezone.utc)
 
     if expires_at_aware < now_aware:
+        logger.error("API Key expired", api_key=api_key_str)
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Invalid or expired API Key")
 
     if not verify_api_key(secret_key, record.hashed_key):
-        print("[DEBUG] get_api_key: hash-ul cheii nu se potriveste")
+        logger.error("Invalid API Key", api_key=api_key_str)
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Invalid or expired API Key")
 
-    print("[DEBUG] get_api_key: cheia API este valida")
+    logger.info("Valid API Key", api_key=api_key_str)
 
 def get_api_key_hash(api_key: str):
     """Face hash la partea secreta a unei chei API."""

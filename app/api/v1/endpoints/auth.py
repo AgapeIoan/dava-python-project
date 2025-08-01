@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from app.core.logging import logger
 from app.db.database import get_db
 from app.db.models import User
 from app.api.v1.schemas import UserCreate, Token
@@ -13,7 +14,8 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 async def register_user(user_data: UserCreate, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(User).where(User.username == user_data.username))
     if result.scalar_one_or_none():
-        raise HTTPException(status_code=400, detail="Username already registered")
+        logger.error("Username already registered", username=user_data.username)
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username already registered")
 
     hashed_pw = get_password_hash(user_data.password)
     new_user = User(username=user_data.username, email=user_data.email, hashed_password=hashed_pw)
@@ -21,6 +23,7 @@ async def register_user(user_data: UserCreate, db: AsyncSession = Depends(get_db
     await db.commit()
 
     token = create_access_token(data={"sub": user_data.username})
+    logger.info("User registered", username=user_data.username)
     return {"access_token": token, "token_type": "bearer"}
 
 @router.post("/login", response_model=Token)
@@ -32,10 +35,12 @@ async def login_for_access_token(
     user = result.scalar_one_or_none()
     
     if not user or not verify_password(form_data.password, user.hashed_password):
+        logger.error("Invalid username or password", username=form_data.username)
         raise HTTPException(
-            status_code=400,
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid username or password"
         )
 
     token = create_access_token(data={"sub": user.username})
+    logger.info("User logged in", username=user.username)
     return {"access_token": token, "token_type": "bearer"}
