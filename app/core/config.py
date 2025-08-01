@@ -7,16 +7,16 @@ class Settings(BaseSettings): #singleton for application settings
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
-    APP_NAME: str = "Math Microservice"
-    DATABASE_URL: str = "sqlite:///./math_service.db"
-    API_KEY: str = "test_api_key"
-    API_KEY_NAME: str = "X-API-Key"
-    REDIS_HOST: str = "localhost"
-    REDIS_PORT: int = 6379
-    SECRET_KEY: str = "test_secret"
-    ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
-    REFRESH_TOKEN_EXPIRE_MINUTES: int = 60
-    MAX_API_KEY_LIFETIME_SECONDS: int = 86400
+    APP_NAME: str
+    DATABASE_URL: str
+    API_KEY: str
+    API_KEY_NAME: str
+    REDIS_HOST: str
+    REDIS_PORT: int
+    SECRET_KEY: str
+    ALGORITHM: str
+    ACCESS_TOKEN_EXPIRE_MINUTES: int
+    REFRESH_TOKEN_EXPIRE_MINUTES: int
+    MAX_API_KEY_LIFETIME_SECONDS: int
 
 settings = Settings()
