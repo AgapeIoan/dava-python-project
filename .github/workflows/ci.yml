@@ -52,8 +52,8 @@ jobs:
         run: |
           {
           echo "APP_NAME = ${{secrets.APP_NAME}}"
-          echo "DATABASE_URL = ${{DATABASE_URL}}"
-          echo "API_KEY = ${{API_KEY}}"
+          echo "DATABASE_URL = ${{secrets.DATABASE_URL}}"
+          echo "API_KEY = ${{secrets.API_KEY}}"
           echo "API_KEY_NAME = ${{secrets.API_KEY_NAME}}"
           echo "REDIS_HOST = ${{secrets.REDIS_HOST}}"
           echo "REDIS_PORT = ${{secrets.REDIS_PORT}}"
@@ -61,7 +61,7 @@ jobs:
           echo "ALGORITHM = ${{secrets.ALGORITHM}}"
           echo "ACCESS_TOKEN_EXPIRE_MINUTES = ${{secrets.ACCESS_TOKEN_EXPIRE_MINUTES}}"
           echo "REFRESH_TOKEN_EXPIRE_MINUTES = ${{secrets.REFRESH_TOKEN_EXPIRE_MINUTES}}"
-          echo "MAX_API_KEY_LIFETIME_SECONDS = ${{MAX_API_KEY_LIFETIME_SECONDS}}"
+          echo "MAX_API_KEY_LIFETIME_SECONDS = ${{secrets.MAX_API_KEY_LIFETIME_SECONDS}}"
           } >> .env
       
       - name: Run tests with pytest
