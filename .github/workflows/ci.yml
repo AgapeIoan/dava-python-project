@@ -64,15 +64,5 @@ jobs:
           echo "REFRESH_TOKEN_EXPIRE_MINUTES=${{secrets.REFRESH_TOKEN_EXPIRE_MINUTES}}"
           echo "MAX_API_KEY_LIFETIME_SECONDS=${{secrets.MAX_API_KEY_LIFETIME_SECONDS}}"
           } >> .env
-
-          # fallback dacă variabilele sunt goale
-          sed -i '/^REDIS_PORT=$/d' .env && echo "REDIS_PORT=6379" >> .env
-          sed -i '/^ACCESS_TOKEN_EXPIRE_MINUTES=$/d' .env && echo "ACCESS_TOKEN_EXPIRE_MINUTES=15" >> .env
-          sed -i '/^REFRESH_TOKEN_EXPIRE_MINUTES=$/d' .env && echo "REFRESH_TOKEN_EXPIRE_MINUTES=60" >> .env
-          sed -i '/^MAX_API_KEY_LIFETIME_SECONDS=$/d' .env && echo "MAX_API_KEY_LIFETIME_SECONDS=86400" >> .env
-
-          echo "DATABASE_URL=${{secrets.DATABASE_URL}}"
-          
-          cat .env
       - name: Run tests with pytest
         run: pytest
