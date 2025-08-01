@@ -1,5 +1,7 @@
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from sqlalchemy.orm import declarative_base
+from typing import AsyncGenerator
+from app.core.logging import logger
 
 from app.core.config import settings
 
@@ -16,7 +18,9 @@ AsyncSessionLocal = async_sessionmaker(
 
 Base = declarative_base()
 
-async def get_db() -> AsyncSession:
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """Dependency to get an async DB session."""
+    logger.info("Opening a new database session.")
     async with AsyncSessionLocal() as session:
         yield session
+    logger.info("Closing the database session.")

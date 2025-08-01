@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_db
 from app.db.models import User
 from app.core.security import get_current_user
+from app.core.logging import logger
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -20,4 +21,5 @@ async def delete_current_user(
     await db.delete(current_user)
     await db.commit()
     
+    logger.info("User deleted", user_id=current_user.id)
     return None

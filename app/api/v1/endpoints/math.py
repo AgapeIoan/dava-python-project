@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, Request, HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1 import schemas
 from app.services.math_service import math_service
@@ -16,7 +16,7 @@ router = APIRouter(tags=["Math Operations"])
 async def calculate_fibonacci(
     n: int,
     request: Request,
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     await log_to_stream("INFO", "Calcul Fibonacci solicitat", {"n": n})
     logger.info("Calcul Fibonacci solicitat", input={"n": n})
@@ -44,7 +44,7 @@ async def calculate_power(
     base: str,
     exponent: str,
     request: Request,
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     await log_to_stream("INFO", "Calcul Power solicitat", {"base": base, "exponent": exponent})
     logger.info("Calcul Power solicitat", input={"base": base, "exponent": exponent})
@@ -80,7 +80,7 @@ async def calculate_power(
 async def calculate_factorial(
     n: int,
     request: Request,
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     await log_to_stream("INFO", "Calcul Factorial solicitat", {"n": n})
     logger.info("Calcul Factorial solicitat", input={"n": n})

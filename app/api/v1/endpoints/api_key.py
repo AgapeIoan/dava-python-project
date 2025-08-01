@@ -1,7 +1,7 @@
 import secrets
 
-from datetime import datetime, timezone, timedelta
-from fastapi import APIRouter, Depends
+from datetime import timedelta, datetime, timezone
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import delete
 from app.db.models import ApiKey
@@ -10,7 +10,9 @@ from app.core.security import get_api_key_hash
 from app.api.v1.schemas import ApiKeyCreate, ApiKeyOut
 from app.core.security import get_current_user
 from app.db.models import User
+from app.core.logging import logger
 
+MAX_API_KEY_LIFETIME_SECONDS = 30 * 24 * 60 * 60  # 30 days
 router = APIRouter(prefix="/apikeys", tags=["apikeys"])
 
 @router.post("", response_model=ApiKeyOut)
@@ -23,6 +25,13 @@ async def create_api_key(
     Genereaza o noua cheie API pentru utilizatorul autentificat.
     Daca o cheie exista deja, va fi inlocuita. Cheia secreta este afisata o singura data.
     """
+
+    if payload.expires_in_seconds > MAX_API_KEY_LIFETIME_SECONDS:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Maximum API key lifetime is {MAX_API_KEY_LIFETIME_SECONDS} seconds."
+        )
+
     await db.execute(delete(ApiKey).where(ApiKey.user_id == current_user.id))
 
     prefix = f"math_{secrets.token_urlsafe(8)}"
@@ -38,12 +47,19 @@ async def create_api_key(
         hashed_key=hashed_secret,
         user_id=current_user.id,
         expires_at=expires_at,
-        created_at=datetime.now(timezone.utc),
+        created_at=datetime.now(timezone.utc)
     )
 
     db.add(new_api_key)
     await db.commit()
     await db.refresh(new_api_key)
+
+    logger.info(
+        "API key created",
+        user_id=current_user.id,
+        key_prefix=prefix,
+        expires_at=expires_at.isoformat()
+    )
 
     return ApiKeyOut(
         key=full_key_to_display,
