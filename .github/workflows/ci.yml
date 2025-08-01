@@ -63,6 +63,6 @@ jobs:
           echo "REFRESH_TOKEN_EXPIRE_MINUTES=${{secrets.REFRESH_TOKEN_EXPIRE_MINUTES}}"
           echo "MAX_API_KEY_LIFETIME_SECONDS=${{secrets.MAX_API_KEY_LIFETIME_SECONDS}}"
           } >> .env
-      
+          cat .env
       - name: Run tests with pytest
         run: pytest
