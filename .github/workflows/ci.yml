@@ -50,7 +50,7 @@ jobs:
       - name: Write .env
         shell: bash
         run: |
-        {
+          {
           echo "APP_NAME = ${{secrets.APP_NAME}}"
           echo "DATABASE_URL = ${{DATABASE_URL}}"
           echo "API_KEY = ${{API_KEY}}"
@@ -61,7 +61,7 @@ jobs:
           echo "ALGORITHM = ${{secrets.ALGORITHM}}"
           echo "ACCESS_TOKEN_EXPIRE_MINUTES = ${{secrets.ACCESS_TOKEN_EXPIRE_MINUTES}}"
           echo "REFRESH_TOKEN_EXPIRE_MINUTES = ${{secrets.REFRESH_TOKEN_EXPIRE_MINUTES}}"
-        } >> .env
+          } >> .env
       
       - name: Run tests with pytest
         run: pytest
