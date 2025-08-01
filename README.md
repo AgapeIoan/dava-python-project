@@ -1,4 +1,4 @@
-# 🧞 Math Microservice
+# Math Microservice
 
 ## Author names
 * 👨‍💻Agape Ioan, Data Engineer
