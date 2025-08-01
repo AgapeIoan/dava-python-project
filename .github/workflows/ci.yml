@@ -61,6 +61,7 @@ jobs:
           echo "ALGORITHM = ${{secrets.ALGORITHM}}"
           echo "ACCESS_TOKEN_EXPIRE_MINUTES = ${{secrets.ACCESS_TOKEN_EXPIRE_MINUTES}}"
           echo "REFRESH_TOKEN_EXPIRE_MINUTES = ${{secrets.REFRESH_TOKEN_EXPIRE_MINUTES}}"
+          echo "MAX_API_KEY_LIFETIME_SECONDS = ${{MAX_API_KEY_LIFETIME_SECONDS}}"
           } >> .env
       
       - name: Run tests with pytest
