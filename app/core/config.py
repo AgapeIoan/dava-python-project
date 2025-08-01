@@ -1,14 +1,16 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings): #singleton for application settings
+    """All sensitive settings **must** be supplied via environment variables."""
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
-    APP_NAME: str = "Math Microservice"
-    DATABASE_URL: str = "sqlite:///./math_service.db"
-    API_KEY: str = "super_secret_api_key" #static API key for authentication
-    API_KEY_NAME: str = "admin_key"
-    REDIS_HOST: str = "redis"
-    REDIS_PORT: int = 6379
-    SECRET_KEY: str = "your_secret_key"
+    APP_NAME: str
+    DATABASE_URL: str
+    API_KEY: str
+    API_KEY_NAME: str
+    REDIS_HOST: str
+    REDIS_PORT: int
+    SECRET_KEY: str
 
 settings = Settings()
