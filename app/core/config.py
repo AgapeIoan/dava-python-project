@@ -1,4 +1,7 @@
+import os
+from dotenv import load_dotenv
 from pydantic_settings import BaseSettings, SettingsConfigDict
+load_dotenv(".env")
 
 class Settings(BaseSettings): #singleton for application settings
     """All sensitive settings **must** be supplied via environment variables."""
