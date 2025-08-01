@@ -11,8 +11,8 @@ from app.api.v1.schemas import ApiKeyCreate, ApiKeyOut
 from app.core.security import get_current_user
 from app.db.models import User
 from app.core.logging import logger
+from app.core.config import settings
 
-MAX_API_KEY_LIFETIME_SECONDS = 30 * 24 * 60 * 60  # 30 days
 router = APIRouter(prefix="/apikeys", tags=["apikeys"])
 
 @router.post("", response_model=ApiKeyOut)
@@ -26,10 +26,10 @@ async def create_api_key(
     Daca o cheie exista deja, va fi inlocuita. Cheia secreta este afisata o singura data.
     """
 
-    if payload.expires_in_seconds > MAX_API_KEY_LIFETIME_SECONDS:
+    if payload.expires_in_seconds > settings.MAX_API_KEY_LIFETIME_SECONDS:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Maximum API key lifetime is {MAX_API_KEY_LIFETIME_SECONDS} seconds."
+            detail=f"Maximum API key lifetime is {settings.MAX_API_KEY_LIFETIME_SECONDS} seconds."
         )
 
     await db.execute(delete(ApiKey).where(ApiKey.user_id == current_user.id))

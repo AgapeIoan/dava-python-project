@@ -15,5 +15,6 @@ class Settings(BaseSettings): #singleton for application settings
     ALGORITHM: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int
     REFRESH_TOKEN_EXPIRE_MINUTES: int
+    MAX_API_KEY_LIFETIME_SECONDS: int
 
 settings = Settings()
