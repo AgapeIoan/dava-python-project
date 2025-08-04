@@ -1,3 +1,8 @@
+"""
+Handles user authentication endpoints.
+Includes signup and login functionalities.
+"""
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,6 +17,19 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.post("/signup", response_model=Token)
 async def register_user(user_data: UserCreate, db: AsyncSession = Depends(get_db)):
+    """
+    Registers a new user.
+
+    Args:
+        user_data (UserCreate): The user data for registration.
+        db (AsyncSession): The database session.
+
+    Returns:
+        dict: Access token and token type.
+
+    Raises:
+        HTTPException: If the username is already registered.
+    """
     result = await db.execute(select(User).where(User.username == user_data.username))
     if result.scalar_one_or_none():
         logger.error("Username already registered", username=user_data.username)
@@ -31,6 +49,19 @@ async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(), 
     db: AsyncSession = Depends(get_db)
 ):
+    """
+    Logs in a user and provides an access token.
+
+    Args:
+        form_data (OAuth2PasswordRequestForm): The login form data.
+        db (AsyncSession): The database session.
+
+    Returns:
+        dict: Access token and token type.
+
+    Raises:
+        HTTPException: If the username or password is invalid.
+    """
     result = await db.execute(select(User).where(User.username == form_data.username))
     user = result.scalar_one_or_none()
     

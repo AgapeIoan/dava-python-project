@@ -1,3 +1,8 @@
+"""
+Handles mathematical operations endpoints.
+Includes Fibonacci, Power, and Factorial calculations.
+"""
+
 from fastapi import APIRouter, Depends, Request, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -18,6 +23,20 @@ async def calculate_fibonacci(
     request: Request,
     db: AsyncSession = Depends(get_db)
 ):
+    """
+    Calculates the Fibonacci sequence for a given number.
+
+    Args:
+        n (int): The number for which to calculate the Fibonacci sequence.
+        request (Request): The HTTP request object.
+        db (AsyncSession): The database session.
+
+    Returns:
+        dict: The result of the Fibonacci calculation.
+
+    Raises:
+        HTTPException: If the input is invalid.
+    """
     await log_to_stream("INFO", "Calcul Fibonacci solicitat", {"n": n})
     logger.info("Calcul Fibonacci solicitat", input={"n": n})
     try:
@@ -46,6 +65,21 @@ async def calculate_power(
     request: Request,
     db: AsyncSession = Depends(get_db)
 ):
+    """
+    Calculates the power of a base raised to an exponent.
+
+    Args:
+        base (str): The base value.
+        exponent (str): The exponent value.
+        request (Request): The HTTP request object.
+        db (AsyncSession): The database session.
+
+    Returns:
+        dict: The result of the power calculation.
+
+    Raises:
+        HTTPException: If the input is invalid.
+    """
     await log_to_stream("INFO", "Calcul Power solicitat", {"base": base, "exponent": exponent})
     logger.info("Calcul Power solicitat", input={"base": base, "exponent": exponent})
 
@@ -82,6 +116,20 @@ async def calculate_factorial(
     request: Request,
     db: AsyncSession = Depends(get_db)
 ):
+    """
+    Calculates the factorial of a given number.
+
+    Args:
+        n (int): The number for which to calculate the factorial.
+        request (Request): The HTTP request object.
+        db (AsyncSession): The database session.
+
+    Returns:
+        dict: The result of the factorial calculation.
+
+    Raises:
+        HTTPException: If the input is invalid.
+    """
     await log_to_stream("INFO", "Calcul Factorial solicitat", {"n": n})
     logger.info("Calcul Factorial solicitat", input={"n": n})
     try:

@@ -16,7 +16,23 @@ async def log_api_request(
         client_ip: str | None,
 ) -> models.ApiRequest:
     """
-    Saves an API request to the database for auditing purposes.
+    Logs an API request to the database for auditing purposes.
+
+    This function saves details of an API request, including its operation type,
+    input parameters, result, and client IP address, to the database.
+
+    Args:
+        db (AsyncSession): The database session used for the operation.
+        operation_type (str): The type of operation performed by the API.
+        input_params (dict): The input parameters provided to the API.
+        result (str): The result returned by the API.
+        client_ip (str | None): The IP address of the client making the request.
+
+    Returns:
+        models.ApiRequest: The saved API request instance.
+
+    Raises:
+        SQLAlchemyError: If the operation fails, an exception is raised and the session is rolled back.
     """
     try:
         db_request = models.ApiRequest(

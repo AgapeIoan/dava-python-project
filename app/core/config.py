@@ -1,9 +1,30 @@
+"""
+Configuration module for application settings.
+Loads sensitive settings from environment variables using Pydantic.
+"""
+
 from dotenv import load_dotenv
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
 load_dotenv(".env")
 
-class Settings(BaseSettings): #singleton for application settings
-    """All sensitive settings **must** be supplied via environment variables."""
+class Settings(BaseSettings):
+    """
+    Singleton class for application settings.
+
+    Attributes:
+        APP_NAME (str): The name of the application.
+        DATABASE_URL (str): The database connection URL.
+        API_KEY (str): The static API key for authentication.
+        API_KEY_NAME (str): The name of the API key.
+        REDIS_HOST (str): The Redis host.
+        REDIS_PORT (int): The Redis port.
+        SECRET_KEY (str): The secret key for cryptographic operations.
+        ALGORITHM (str): The algorithm used for token generation.
+        ACCESS_TOKEN_EXPIRE_MINUTES (int): The expiration time for access tokens in minutes.
+        REFRESH_TOKEN_EXPIRE_MINUTES (int): The expiration time for refresh tokens in minutes.
+        MAX_API_KEY_LIFETIME_SECONDS (int): The maximum lifetime for API keys in seconds.
+    """
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

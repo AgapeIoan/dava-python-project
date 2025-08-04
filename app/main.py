@@ -13,6 +13,22 @@ configure_logging()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    """
+    Manages the lifespan of the FastAPI application.
+
+    This function initializes resources such as the database and Redis logger during startup,
+    and disposes of them during shutdown.
+
+    Args:
+        app (FastAPI): The FastAPI application instance.
+
+    Yields:
+        None: Allows the application to run.
+
+    Logs:
+        Information about resource initialization and disposal.
+    """
+
     logger.info("Startup: Initializing resources...")
 
     # DB setup
@@ -44,10 +60,19 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title=settings.APP_NAME,
-    description="Un microserviciu pentru operatii matematice, gata pentru productie.",
+    description="A microservice for mathematical operations, production-ready.",
     version="1.0.0",
     lifespan=lifespan
 )
+"""
+Creates the FastAPI application instance.
+
+Attributes:
+    title (str): The name of the application.
+    description (str): A brief description of the application.
+    version (str): The version of the application.
+    lifespan (Callable): The lifespan context manager for resource management.
+"""
 
 #for metrics and monitoring
 app.add_middleware(PrometheusMiddleware)
@@ -58,7 +83,12 @@ app.add_route("/metrics", handle_metrics)
 # endpoint test, for checking if the service is running
 @app.get("/healthcheck", tags=["Monitoring"])
 def health_check() -> dict[str, str]:
-    """Verifica starea de sanatate a serviciului."""
+    """
+    Checks the health status of the service.
+
+    Returns:
+        dict[str, str]: A dictionary containing the health status.
+    """
     return {"status": "ok"}
 
 
@@ -73,4 +103,10 @@ app.include_router(
 
 @app.get("/")
 def read_root() -> dict[str, str]:
+    """
+    Returns a welcome message.
+
+    Returns:
+        dict[str, str]: A dictionary containing the welcome message.
+    """
     return {"message": f"Bine ai venit la {settings.APP_NAME}!"}

@@ -71,7 +71,20 @@ async def get_api_key(
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Valideaza o cheie API. Gaseste cheia dupa prefix si verifica hash-ul partii secrete.
+    Validates an API key.
+
+    This function checks the provided API key by splitting it into its prefix and secret key.
+    It then verifies the prefix against the database and checks the hashed secret key.
+
+    Args:
+        api_key_str (str | None): The API key string provided in the request header.
+        db (AsyncSession): The database session dependency.
+
+    Raises:
+        HTTPException: If the API key is missing, has an invalid format, is expired, or does not match the hashed key.
+
+    Returns:
+        None: If the API key is valid, the function completes without returning a value.
     """
     if not api_key_str:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "API Key is missing")
@@ -102,9 +115,26 @@ async def get_api_key(
     logger.info("Valid API Key", api_key=api_key_str)
 
 def get_api_key_hash(api_key: str):
-    """Face hash la partea secreta a unei chei API."""
+    """
+    Hashes the secret part of an API key.
+
+    Args:
+        api_key (str): The secret part of the API key to be hashed.
+
+    Returns:
+        str: The hashed API key.
+    """
     return pwd_context.hash(api_key)
 
 def verify_api_key(plain_api_key: str, hashed_api_key: str) -> bool:
-    """Verifica o cheie API in text clar cu varianta ei hash-uita."""
+    """
+    Verifies a plain text API key against its hashed version.
+
+    Args:
+        plain_api_key (str): The plain text API key.
+        hashed_api_key (str): The hashed version of the API key.
+
+    Returns:
+        bool: True if the plain text API key matches the hashed version, False otherwise.
+    """
     return pwd_context.verify(plain_api_key, hashed_api_key)
