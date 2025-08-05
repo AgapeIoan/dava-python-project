@@ -11,7 +11,20 @@ from datetime import timedelta
 
 @pytest.mark.asyncio
 async def test_signup_user(client: AsyncClient, db_session: AsyncSession):
-    """Testeaza inregistrarea unui utilizator nou."""
+    """
+    Tests the registration of a new user.
+
+    This test verifies that a new user can sign up and their details are added to the database.
+
+    Args:
+        client (AsyncClient): The HTTP client for testing.
+        db_session (AsyncSession): The database session instance.
+
+    Asserts:
+        - The response status code is 200.
+        - The response contains an access token and token type.
+        - The user is added to the database with the correct details.
+    """
     response = await client.post(
         "/auth/signup",
         json={
@@ -34,7 +47,17 @@ async def test_signup_user(client: AsyncClient, db_session: AsyncSession):
 
 @pytest.mark.asyncio
 async def test_signup_duplicate_user(client: AsyncClient, test_user: User):
-    """Testeaza ca inregistrarea unui utilizator duplicat esueaza."""
+    """
+    Tests that registering a duplicate user fails.
+
+    Args:
+        client (AsyncClient): The HTTP client for testing.
+        test_user (User): The test user instance.
+
+    Asserts:
+        - The response status code is 400.
+        - The error detail indicates the username is already registered.
+    """
     response = await client.post(
         "/auth/signup",
         json={
@@ -48,7 +71,17 @@ async def test_signup_duplicate_user(client: AsyncClient, test_user: User):
 
 @pytest.mark.asyncio
 async def test_login_for_access_token(client: AsyncClient, test_user: User):
-    """Testeaza logarea cu credentiale valide."""
+    """
+    Tests logging in with valid credentials.
+
+    Args:
+        client (AsyncClient): The HTTP client for testing.
+        test_user (User): The test user instance.
+
+    Asserts:
+        - The response status code is 200.
+        - The response contains an access token and token type.
+    """
     response = await client.post(
         "/auth/login",
         data={"username": test_user.username, "password": "StrongPassword123"},
@@ -60,7 +93,16 @@ async def test_login_for_access_token(client: AsyncClient, test_user: User):
 
 @pytest.mark.asyncio
 async def test_invalid_login_credentials(client: AsyncClient):
-    """Testeaza logarea cu credentiale invalide."""
+    """
+    Tests logging in with invalid credentials.
+
+    Args:
+        client (AsyncClient): The HTTP client for testing.
+
+    Asserts:
+        - The response status code is 401.
+        - The error detail indicates invalid username or password.
+    """
     response = await client.post(
         "/auth/login", data={"username": "nonexistent", "password": "wrong"}
     )
@@ -69,7 +111,17 @@ async def test_invalid_login_credentials(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_token_auth_for_key_creation(client: AsyncClient, auth_token: str):
-    """Testeaza ca un token valid poate fi folosit pentru a crea o cheie API."""
+    """
+    Tests that a valid token can be used to create an API key.
+
+    Args:
+        client (AsyncClient): The HTTP client for testing.
+        auth_token (str): The JWT token for authentication.
+
+    Asserts:
+        - The response status code is 200.
+        - The response contains the API key.
+    """
     headers = {"Authorization": f"Bearer {auth_token}"}
     response = await client.post(
         "/apikeys", json={"expires_in_seconds": 3600}, headers=headers
@@ -80,7 +132,16 @@ async def test_token_auth_for_key_creation(client: AsyncClient, auth_token: str)
 
 @pytest.mark.asyncio
 async def test_expired_token_cannot_create_key(client: AsyncClient):
-    """Testeaza ca un token expirat nu poate accesa resurse protejate."""
+    """
+    Tests that an expired token cannot access protected resources.
+
+    Args:
+        client (AsyncClient): The HTTP client for testing.
+
+    Asserts:
+        - The response status code is 401.
+        - The error detail indicates invalid credentials.
+    """
     expired_token = create_access_token(
         data={"sub": "testuser"}, expires_delta=timedelta(seconds=-1)
     )
@@ -94,7 +155,17 @@ async def test_expired_token_cannot_create_key(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_revoked_user_token_is_invalid(client: AsyncClient, db_session: AsyncSession):
     """
-    Testeaza ca token-ul unui utilizator care a fost sters nu mai este valid.
+    Tests that a token for a deleted user is invalid.
+
+    This test verifies that a token becomes invalid if the associated user is deleted from the database.
+
+    Args:
+        client (AsyncClient): The HTTP client for testing.
+        db_session (AsyncSession): The database session instance.
+
+    Asserts:
+        - The response status code is 401.
+        - The error detail indicates invalid credentials.
     """
     # Pas 1: Cream si ne logam cu un utilizator pentru a obtine un token valid
     signup_response = await client.post(
