@@ -1,33 +1,70 @@
 # Math Microservice
 
-## Author names
-* 👨‍💻Agape Ioan, Data Engineer
-* 👨‍💻Munteanu Daniela, Data Engineer
-* 👨‍💻Uliuliuc Serafim, Data Engineer
+A production-ready, containerized microservice built with **FastAPI**, designed to perform secure and observable mathematical computations. This project demonstrates best practices in modern API development, including a clean architecture, asynchronous operations, JWT and hashed API key authentication, Redis caching, structured logging via Redis Streams, and Prometheus monitoring.
+
+**Authors:**
+*   👨‍💻 Agape Ioan, Data Engineer
+*   👨‍💻 Munteanu Daniela, Data Engineer
+*   👨‍💻 Uliuliuc Serafim, Data Engineer
 
 ---
 
-A production-ready, containerized microservice built with **FastAPI**, designed to perform secure and observable mathematical computations: **power, Fibonacci, and factorial**. The system leverages **Redis for caching and streaming logs**, uses **JWT and API keys for security**, and integrates **Prometheus** for monitoring.
+## 🚀 Getting Started
+
+### Prerequisites
+*   Git
+*   Docker & Docker Compose
+
+### Step 1: Clone the Repository
+```sh
+git clone https://github.com/AgapeIoan/dava-python-project
+cd dava-python-project
+```
+
+### Step 2: Configure Your Environment
+The application uses a `.env` file for configuration. A template is provided.
+```sh
+# Copy the example file
+cp .env.example .env
+```
+**Important:** Open the newly created `.env` file and **generate a new `SECRET_KEY`**. This is crucial for security. You can generate one with:
+```sh
+openssl rand -hex 32
+```
+
+### Step 3: Build and Run with Docker Compose
+This single command builds all Docker images and starts the API server, Redis, and the log consumer.
+```sh
+docker-compose up --build
+```
+The services will now be running:
+*   🚀 **API Server:** `http://localhost:8000`
+*   📄 **Interactive Docs (Swagger UI):** `http://localhost:8000/docs`
+*   📊 **Monitoring Metrics:** `http://localhost:8000/metrics`
+
+### Step 4: Your First API Call (User Flow)
+Use the [Interactive Docs](http://localhost:8000/docs) to follow this flow:
+1.  **Create a User:** Go to `POST /auth/signup`. Click "Try it out", provide a `username`, `email`, and `password`, then "Execute".
+2.  **Log In (Get JWT Token):** Click the "Authorize" button. In the `OAuth2PasswordBearer` section, enter your `username` and `password` and click "Authorize". You are now authenticated for user-protected endpoints.
+3.  **Generate an API Key:** Go to the now-unlocked `POST /apikeys` endpoint. "Try it out", set an expiration, and execute. **Copy the `key` value** from the response—it will not be shown again.
+4.  **Authorize with API Key:** Click the "Authorize" button again. In the `APIKeyHeader` section, paste the full API key you just copied. Click "Authorize". You can now access service-protected endpoints.
+5.  **Make a Secured Math Call:** Go to `GET /api/v1/power`, "Try it out", provide the `base` and `exponent` as query parameters (e.g., `base`: "-1", `exponent`: "0.5"), and execute. You should receive a `200 OK` response.
 
 ---
 
-## ✅ Requirements Coverage
+## ✅ Features & Design Philosophy
 
-### Core Features
-* `pow` operation →  implemented via `/api/v1/power`
-* `n-th Fibonacci number` →  via `/api/v1/fibonacci`
-* `factorial of number` →  via `/api/v1/factorial`
-* Request persistence → audit saved in `api_requests` DB table
-* REST API →  built with FastAPI (OpenAPI 3.1 spec)
-* Database →  SQLite + SQLAlchemy (async)
-
-### Nice to Haves
-
-* Containerization →  via Docker & `docker-compose`
-* Monitoring →  Prometheus `/metrics` exposed via middleware
-* Caching →  Redis with `@cache_result` decorator
-* Authorization →  JWT + API Key protection
-* Logging →  Redis Streams (structured JSON)
+*   **Mathematical Operations:** `pow`, `fibonacci`, and `factorial` endpoints. The `power` function fully supports complex numbers.
+*   **Persistent Auditing:** All API requests are logged to a persistent SQLite database for auditing purposes. This is treated as a server-side effect, allowing math endpoints to maintain `GET` semantics from the client's perspective.
+*   **Dual Authentication System:**
+    *   🔐 **JWT Tokens:** For user-centric flows (signup/login), following the OAuth2 Password Flow.
+    *   🔑 **Hashed API Keys:** For service-to-service communication. Keys are generated per user, the secret is shown only once, and only its `argon2` hash is stored, ensuring high security.
+*   **High-Performance Caching:** Uses Redis and a reusable `@cache_result` decorator to cache results of expensive computations (Fibonacci, Factorial), significantly reducing latency on subsequent requests.
+*   **Decoupled Logging:** Emits structured JSON logs to **Redis Streams**. A separate, containerized **log consumer** processes these logs asynchronously, ensuring that logging operations never block the main application.
+*   **Monitoring:** Exposes a `/metrics` endpoint for **Prometheus** scraping, providing instant observability into request rates, errors, and latencies.
+*   **Asynchronous Core:** Built from the ground up with `async/await` using FastAPI and an async database stack (`aiosqlite`) for high concurrency.
+*   **Clean Architecture:** Follows a modular `endpoints`, `services`, `db`, `core` structure, ensuring a clear separation of concerns and high maintainability.
+*   **Containerized:** Fully containerized with **Docker** for consistent development, testing, and deployment environments.
 
 ---
 
@@ -35,186 +72,30 @@ A production-ready, containerized microservice built with **FastAPI**, designed 
 
 | Path                 | Description                                       |
 | -------------------- | ------------------------------------------------- |
-| `main.py`            | App entrypoint: sets up DB, Redis, metrics        |
-| `api/v1/endpoints/`  | Route modules: `math`, `auth`, `users`, `apikeys` |
-| `core/`              | Logging, config, decorators, Redis, security      |
-| `db/`                | Database models, session, repository              |
-| `services/`          | Business logic for math operations                |
-| `schemas.py`         | Pydantic models for request/response              |
-| `Dockerfile`         | Container spec for the app                        |
-| `docker-compose.yml` | Redis + App composition                           |
-| `.env`               | Environment variables                             |
+| `main.py`            | App entrypoint: manages `lifespan`, middleware, and routers. |
+| `api/v1/endpoints/`  | Route modules: `math`, `auth`, `users`, `apikeys`. |
+| `core/`              | Shared logic: logging, config, decorators, Redis, security. |
+| `db/`                | Database models (`models.py`) and async session management. |
+| `services/`          | Core business logic for mathematical operations. |
+| `schemas.py`         | Pydantic models for request/response validation. |
+| `docker-compose.yml` | Defines the multi-container environment (API, Redis, Log Consumer). |
+| `tests/`             | `pytest` suite with unit and integration tests using fixtures. |
 
 ---
 
-## Math Endpoints
+## 🛠️ Technologies Used
 
-| Route               | Description                                  |
-| ------------------- | -------------------------------------------- |
-| `/api/v1/fibonacci` | `GET`, returns Fibonacci number at index `n` |
-| `/api/v1/power`     | `GET`, computes exponentiation (complex OK)  |
-| `/api/v1/factorial` | `GET`, returns `n!`                          |
-
-All endpoints are **secured** using:
-* 🔐 Bearer Token (JWT)
-* 🔑 `X-API-Key` header
----
-
-## 🔒 Security
-| Mechanism | Used for                  | Implementation                 |
-| --------- | ------------------------- | ------------------------------ |
-| JWT       | Authenticated user access | `/auth/login`, `/auth/signup`  |
-| API Key   | Protected route access    | `/apikeys` generation per user |
-
-Passwords are hashed using `argon2`.
-All keys are hashed and stored securely.
----
-
-## ♻️ Caching with Redis
-Results of heavy computations are cached:
-
-| Operation | TTL      | Storage      |
-| --------- | -------- | ------------ |
-| Fibonacci | 1 hour   | Redis (DB 0) |
-| Factorial | 24 hours | Redis (DB 0) |
-
-> Cache logic is abstracted via `@cache_result`, allowing easy reuse.
----
-
-## Logging with Redis Streams
-
-Each API event is logged to a Redis Stream (`log_stream`) with structured entries:
-
-```json
-{
-  "timestamp": "...",
-  "level": "INFO",
-  "message": "Power calculated",
-  "extra": {
-    "base": "2",
-    "exponent": "10"
-  }
-}
-```
-These logs can be consumed in real-time or analyzed externally (ELK, Logstash, etc.)
----
-
-##  Monitoring
-Integrated with **Prometheus** via:
-
-```http
-GET /metrics
-```
-
-The app includes:
-
-* Request count
-* Response status codes
-* Latency metrics
-
-Use `docker-compose` to spin up both Redis and the app for full observability.
-
----
-
-## Persistence Layer
-* Uses **SQLAlchemy async ORM**
-* Models:
-
-  * `User`: auth user
-  * `ApiKey`: hashed API keys per user
-  * `ApiRequest`: audit log per API call
-* Audit includes input params, result, client IP
-
----
-
-
-#### 1. Build and start:
-```bash
-docker-compose up --build
-```
-
-#### 2. Access:
-
-* Docs: [http://localhost:8000/docs](http://localhost:8000/docs)
-* Metrics: [http://localhost:8000/metrics](http://localhost:8000/metrics)
-
----
-
-## 🔐 Example `.env`
-
-```dotenv
-APP_NAME=Math Microservice
-DATABASE_URL=sqlite:///./math_service.db
-API_KEY=super_secret_api_key
-API_KEY_NAME=admin_key
-REDIS_HOST=redis
-REDIS_PORT=6379
-SECRET_KEY=your_super_secure_key
-```
-
----
-
-## 📦 Dependencies (requirements.txt)
-
-Key packages used:
-
-* `fastapi`, `uvicorn[standard]`
-* `sqlalchemy`, `aiosqlite`
-* `pydantic-settings`, `python-jose`, `passlib[argon2]`
-* `redis`, `structlog`
-* `starlette-exporter`, `prometheus`
-* `pytest`, `httpx`, `pytest-asyncio`
-
----
-
-##  Technologies Used
-
-| Category         | Technology                      |
+| Category         | Technology / Library            |
 | ---------------- | ------------------------------- |
 | Web Framework    | FastAPI                         |
 | Web Server       | Uvicorn (ASGI)                  |
-| ORM              | SQLAlchemy (Async)              |
-| Database         | SQLite                          |
-| Caching          | Redis (via `redis.asyncio`)     |
+| Database         | SQLite & SQLAlchemy (Async)     |
+| Caching & Stream | Redis (via `redis.asyncio`)     |
 | Logging          | Structlog (JSON), Redis Streams |
 | Monitoring       | Starlette Exporter (Prometheus) |
-| Auth             | JWT (via python-jose), API Keys |
-| Password Hashing | Argon2 (via passlib)            |
-| Serialization    | Pydantic                        |
-| Configuration    | pydantic-settings               |
-| Testing          | Pytest, httpx, pytest-asyncio   |
+| Authentication   | JWT (`python-jose`), API Keys   |
+| Hashing          | Argon2 (`passlib`)              |
+| Validation       | Pydantic                        |
+| Testing          | Pytest, HTTPX, pytest-asyncio   |
 | Containerization | Docker, docker-compose          |
-
----
-
-##  Assignment Mapping
-
-| Requirement                                | Status |
-| ------------------------------------------ | ------ |
-| Math operations: pow, fibonacci, factorial | ✅      |
-| Persist requests to DB                     | ✅      |
-| Expose as REST API                         | ✅      |
-| Production-ready design                    | ✅      |
-| Micro framework (Flask-like)               | ✅      |
-| Follow MVCS, modular structure             | ✅      |
-| Use SQL/NoSQL (SQLite OK)                  | ✅      |
-| Containerization                           | ✅      |
-| Caching                                    | ✅      |
-| Authorization                              | ✅      |
-| Logging via streaming (Redis Stream)       | ✅      |
-| Monitoring (Prometheus)                    | ✅      |
-
----
-
-## 👨 Author Notes
-
-This project is fully functional, extensible, and designed using clean architecture principles. It is suitable for:
-
-* learning how to build production-grade FastAPI services
-* designing testable microservices
-* integrating Redis, Prometheus, and structured logs
-* demonstrating best practices in modern Python API development
-
----
-
 
