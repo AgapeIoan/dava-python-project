@@ -1,4 +1,7 @@
-# app/core/redis_logger.py
+"""
+Redis logger module.
+Provides functionality for logging events to a Redis stream.
+"""
 
 import json
 from datetime import datetime, timezone
@@ -7,34 +10,56 @@ from app.core.config import settings
 from app.core.logging import logger
 
 try:
-    # Cream o instanta de client Redis special pentru stream-ul de log-uri
+    """
+    Configures a Redis client specifically for logging.
+
+    Attributes:
+        redis_client (redis.Redis): The Redis client instance for logging.
+
+    Notes:
+        - Uses a separate Redis database (e.g., db=1) to isolate logs from cache.
+        - Logs success or failure during configuration.
+    """
     redis_client = redis.from_url(
         f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}",
-        db=1,  # Folosim o baza de date Redis diferita (ex: 1) pentru a separa log-urile de cache
+        db=1,  # Separate Redis database for logs
         decode_responses=True
     )
-    # Ping pentru a verifica conexiunea la pornire
-    # Nota: Intr-o aplicatie reala, acest ping ar trebui facut intr-un startup event
-    # Dar pentru structura actuala, il lasam aici cu un log.
-    logger.info("Clientul Redis async pentru logging a fost configurat.")
+    logger.info("✅ Async Redis client for logging has been configured.")
 except Exception as e:
-    logger.error("Nu s-a putut configura clientul Redis pentru logging.", error=e)
+    logger.error("❌ Failed to configure Redis client for logging.", error=e)
     redis_client = None
 
-
 def make_serializable(data: dict) -> dict:
-    """O functie recursiva simpla pentru a converti valorile non-serializabile."""
+    """
+    Recursively converts non-serializable values in a dictionary to strings.
+
+    Args:
+        data (dict): The dictionary to process.
+
+    Returns:
+        dict: A dictionary with all values converted to strings.
+    """
     def convert(v):
-        # Orice nu este un dictionar este convertit la string
         if isinstance(v, dict):
             return make_serializable(v)
         return str(v)
     
     return {k: convert(v) for k, v in data.items()}
 
-
 async def log_to_stream(level: str, message: str, extra: dict = None):
-    """Construieste un log si il scrie in stream-ul Redis."""
+    """
+    Constructs a log entry and writes it to a Redis stream.
+
+    Args:
+        level (str): The log level (e.g., "INFO", "ERROR").
+        message (str): The log message.
+        extra (dict, optional): Additional data to include in the log entry.
+
+    Notes:
+        - Uses the Redis `xadd` command to append the log entry to the stream.
+        - Logs errors if writing to the Redis stream fails.
+    """
     log_entry = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "level": level,
@@ -46,4 +71,4 @@ async def log_to_stream(level: str, message: str, extra: dict = None):
         try:
             await redis_client.xadd("log_stream", log_entry)
         except Exception as e:
-            logger.error("Eroare la scrierea in Redis Stream.", error=e)
+            logger.error("Error writing to Redis stream.", error=e)

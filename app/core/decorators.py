@@ -1,21 +1,32 @@
+"""
+Defines decorators for enhancing functionality.
+Includes caching for asynchronous functions using Redis.
+"""
+
 import functools
 from app.core.logging import logger
 from app.core.redis_cache import cache as redis_cache_client
 
 def cache_result(key_prefix: str, ttl: int = 3600):
     """
-    Un decorator care gestioneaza automat caching-ul pentru o functie async.
-    
-    :param key_prefix: Un prefix pentru cheia de cache (ex: "fibonacci").
-    :param ttl: Timpul de viata (Time To Live) al cache-ului, in secunde.
+    A decorator that automatically manages caching for an asynchronous function.
+
+    Args:
+        key_prefix (str): A prefix for the cache key (e.g., "fibonacci").
+        ttl (int): Time To Live (TTL) for the cache, in seconds.
+
+    Returns:
+        Callable: The wrapped function with caching enabled.
+
+    Notes:
+        If the Redis cache client is unavailable, the function will execute without caching.
     """
     def decorator(func):
         @functools.wraps(func)
         async def wrapper(*args, **kwargs):
             if not redis_cache_client:
                 logger.warning(
-                    "Clientul Redis pentru cache nu este disponibil. "
-                    "Se executa functia fara cache."
+                    "Redis cache client is unavailable. Executing function without cache."
                 )
                 return await func(*args, **kwargs)
 
@@ -24,7 +35,7 @@ def cache_result(key_prefix: str, ttl: int = 3600):
             arg_str = ":".join(arg_list + kwarg_list)
             cache_key = f"{key_prefix}:{arg_str}"
 
-            # 1. Verificam cache-ul
+            # 1. Check the cache
             cached_result = await redis_cache_client.get(cache_key)
             if cached_result is not None:
                 logger.info("Cache HIT", key=cache_key)

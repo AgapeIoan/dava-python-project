@@ -1,3 +1,8 @@
+"""
+Handles API key management endpoints.
+Includes functionality for creating and managing API keys.
+"""
+
 import secrets
 
 from datetime import timedelta, datetime, timezone
@@ -22,10 +27,19 @@ async def create_api_key(
     current_user: User = Depends(get_current_user)
 ):
     """
-    Genereaza o noua cheie API pentru utilizatorul autentificat.
-    Daca o cheie exista deja, va fi inlocuita. Cheia secreta este afisata o singura data.
-    """
+    Creates a new API key for the authenticated user.
 
+    Args:
+        payload (ApiKeyCreate): The API key creation payload.
+        db (AsyncSession): The database session.
+        current_user (User): The currently authenticated user.
+
+    Returns:
+        ApiKeyOut: The created API key details.
+
+    Raises:
+        HTTPException: If the requested API key lifetime exceeds the maximum allowed.
+    """
     if payload.expires_in_seconds > settings.MAX_API_KEY_LIFETIME_SECONDS:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

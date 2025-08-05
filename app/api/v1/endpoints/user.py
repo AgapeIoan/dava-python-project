@@ -1,3 +1,8 @@
+"""
+Handles user management endpoints.
+Includes functionality for deleting the authenticated user.
+"""
+
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,9 +19,18 @@ async def delete_current_user(
     current_user: User = Depends(get_current_user)
 ):
     """
-    Sterge utilizatorul autentificat curent.
-    Datorita relatiei 'CASCADE' din model, orice cheie API asociata
-    va fi stearsa automat de baza de date.
+    Deletes the currently authenticated user.
+
+    Args:
+        db (AsyncSession): The database session.
+        current_user (User): The currently authenticated user.
+
+    Returns:
+        None: Indicates successful deletion.
+
+    Notes:
+        Due to the 'CASCADE' relationship in the model, any associated API keys
+        will be automatically deleted by the database.
     """
     await db.delete(current_user)
     await db.commit()
