@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    # volumes:
+    #   - ./app:/app/app
+    env_file:
+      - .env
+
+  redis:
+    image: "redis:alpine"
+    ports:
+      - "6379:6379"
+
+  log-consumer:
+    build:
+      context: .
+    command: [ "python", "log_consumer.py" ]
+    depends_on:
+      - redis
+    volumes:
+      - .:/app
+    environment:
+      - REDIS_HOST=redis
+  tunnel:
+      image: cloudflare/cloudflared:latest
+      restart: unless-stopped
+      command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TOKEN}
+      depends_on:
+        - web
