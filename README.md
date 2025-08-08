@@ -1,5 +1,7 @@
 # Math Microservice
 
+![Website](https://img.shields.io/website?url=http%3A%2F%2Fdava-api.home.agapeioan.ro%2Fdocs&up_message=online&down_message=offline&label=API%20Status)
+
 A production-ready, containerized microservice built with **FastAPI**, designed to perform secure and observable mathematical computations. This project demonstrates best practices in modern API development, including a clean architecture, asynchronous operations, JWT and hashed API key authentication, Redis caching, structured logging via Redis Streams, and Prometheus monitoring.
 
 **Authors:**
@@ -9,7 +11,26 @@ A production-ready, containerized microservice built with **FastAPI**, designed 
 
 ---
 
-## 🚀 Getting Started
+## ☁️ Live Demo & Architecture
+
+This application is deployed in a secure, self-hosted environment using a **Cloudflare Tunnel**, demonstrating a robust private cloud architecture. The stack runs on a local Proxmox server and is managed via Portainer and Docker Compose.
+This setup makes the service publicly and securely accessible at **[dava-api.home.agapeioan.ro](http://dava-api.home.agapeioan.ro)** without exposing any ports on the local network.
+
+---
+
+## 🚀 Live Endpoints
+
+The service is live and accessible at the following endpoints:
+
+*   🚀 **API Server & Interactive Docs (Swagger UI):** **[http://dava-api.home.agapeioan.ro/docs](http://dava-api.home.agapeioan.ro/docs)**
+*   📊 **Monitoring Metrics (Prometheus):** **[http://dava-api.home.agapeioan.ro/metrics](http://dava-api.home.agapeioan.ro/metrics)**
+*   ❤️ **Health Check:** **[http://dava-api.home.agapeioan.ro/healthcheck](http://dava-api.home.agapeioan.ro/healthcheck)**
+
+---
+
+## 🛠️ Running the Project Locally
+
+If you wish to run the stack on your own machine, follow these steps.
 
 ### Prerequisites
 *   Git
