@@ -120,3 +120,29 @@ Use the [Interactive Docs](http://localhost:8000/docs) to follow this flow:
 | Testing          | Pytest, HTTPX, pytest-asyncio   |
 | Containerization | Docker, docker-compose          |
 
+---
+
+## 🔬 Architectural Spike: Simulating Serverless Behavior
+
+In addition to the main application, we conducted an architectural exploration to validate the service's statelessness and resilience, key attributes of a **serverless** architecture. This proof of concept is available in the [`feature/serverless-concept`](https://github.com/AgapeIoan/dava-python-project/tree/feature/serverless-concept) branch.
+
+### The Concept
+
+The goal was to simulate the behavior of a serverless environment (like AWS Lambda) where the application container can be started and stopped frequently ("cold starts") and must not retain any in-memory state between invocations.
+
+Instead of deploying to a cloud provider, we simulated this behavior using:
+1.  **A Production-Grade Docker Image:** A `Dockerfile.prod` was created using `gunicorn` with `uvicorn` workers, which is the standard for running FastAPI in production.
+2.  **A Test Script (`tests/test_stateless_behavior.py`):** An end-to-end script that performs the following scenario:
+    *   **Step 1:** Starts the application stack using `docker-compose`.
+    *   **Step 2:** Creates a new user and generates a persistent API key.
+    *   **Step 3:** Verifies that the API key works.
+    *   **Step 4:** **Simulates a cold start** by forcefully stopping and restarting the API container (`docker-compose stop/start`).
+    *   **Step 5:** Verifies that after the restart, the **same user can still log in** and the **same API key is still valid**, proving that all critical state is correctly persisted in our external data stores (SQLite and Redis) and not lost with the container.
+
+### Key Takeaways
+
+*   **Stateless by Design:** This experiment successfully validated that our application is truly stateless. All critical data (users, keys, audit logs) is managed in the persistent database layer, allowing the application containers to be ephemeral.
+*   **Production-Ready Container:** The use of `gunicorn` demonstrates readiness for a multi-core production environment.
+*   **Portability:** This proof of concept reinforces that the containerized application is highly portable and would be an excellent candidate for deployment on serverless platforms like **AWS Fargate** or **Google Cloud Run**, which are container-based serverless solutions.
+
+> You can explore the full implementation and run the simulation script by checking out the `feature/serverless-concept` branch.
