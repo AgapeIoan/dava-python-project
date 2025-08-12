@@ -10,8 +10,13 @@ from app.db.database import get_db
 from app.db.models import User
 from app.core.security import get_current_user
 from app.core.logging import logger
+from app.api.v1.schemas import UserOut
 
 router = APIRouter(prefix="/users", tags=["Users"])
+
+@router.get("/me", response_model=UserOut)
+async def read_current_user(current_user: User = Depends(get_current_user)):
+    return current_user
 
 @router.delete("/me", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_current_user(

@@ -73,3 +73,11 @@ class TokenData(BaseModel):
         username (str | None): The username associated with the token.
     """
     username: str | None = None
+
+class UserOut(BaseModel):
+    id: int
+    username: str
+    email: EmailStr
+
+    class Config:
+        orm_mode = True
