@@ -42,7 +42,7 @@ def generate_api_key(auth_token):
         print("❌ API key failed:", res.text)
         return None
 
-def test_power(key_to_test):
+def run_power_test(key_to_test):
     r = httpx.get(f"{BASE_URL}/api/v1/power", params={"base": 2, "exponent": 3}, headers={"X-API-Key": key_to_test})
     if r.status_code == 200:
         print("✅ Power OK:", r.json())
@@ -74,13 +74,13 @@ if __name__ == "__main__":
     if session_token:
         api_key_value = generate_api_key(session_token)
         if api_key_value:
-            test_power(api_key_value)
+            run_power_test(api_key_value)
 
             restart_container()
 
             session_token = login()
             if session_token:
-                get_current_user_info(session_token)  # ✅ Nou: confirmă userul
+                get_current_user_info(session_token)
                 api_key_value = generate_api_key(session_token)
                 if api_key_value:
-                    test_power(api_key_value)
+                    run_power_test(api_key_value)
