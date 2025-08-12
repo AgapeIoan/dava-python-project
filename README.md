@@ -1,13 +1,41 @@
 # Math Microservice
 
-![Website](https://img.shields.io/website?url=http%3A%2F%2Fdava-api.home.agapeioan.ro%2Fdocs&up_message=online&down_message=offline&label=API%20Status)
+> **Note:** You are currently on the `feature/serverless-concept` branch. This branch contains a **Proof of Concept** to simulate and validate the stateless behavior of the application, a key attribute of serverless architectures.
+>
+> For the main, self-hosted production version of the project, please refer to the `main` branch.
 
-A production-ready, containerized microservice built with **FastAPI**, designed to perform secure and observable mathematical computations. This project demonstrates best practices in modern API development, including a clean architecture, asynchronous operations, JWT and hashed API key authentication, Redis caching, structured logging via Redis Streams, and Prometheus monitoring.
+---
 
-**Authors:**
-*   👨‍💻 Agape Ioan, Data Engineer
-*   👨‍💻 Munteanu Daniela, Data Engineer
-*   👨‍💻 Uliuliuc Serafim, Data Engineer
+## 🔬 Architectural Spike: Simulating Serverless Behavior
+
+This branch demonstrates the application's resilience and statelessness through a special testing script and a production-grade container configuration.
+
+### Key Differences from `main` Branch:
+*   **Production-Grade Server:** Uses `Dockerfile.prod` with `gunicorn` and `uvicorn` workers, ready for multi-core environments.
+*   **Statelessness Test Script:** Includes `tests/test_stateless_and_persistence.py`, a script that simulates a "cold start" by restarting the container to prove that all critical state is correctly persisted externally.
+*   **Production Compose File:** Uses `docker-compose.prod.yml` to run this specific configuration.
+
+### How to Run the Simulation
+
+1.  **Ensure you are on the `feature/serverless-concept` branch.**
+2.  **Build and Start the Stack:**
+    ```sh
+    # Use the production-specific compose file
+    docker-compose -f docker-compose.prod.yml up --build -d
+    ```
+    *(The `-d` flag runs the containers in the background.)*
+3.  **Run the Test Script:**
+    Execute the simulation script. It will interact with the running containers, perform the test scenario, and print the results to the console.
+    ```sh
+    # Ensure your local python environment has 'httpx' installed (pip install httpx)
+    python tests/test_stateless_and_persistence.py
+    ```
+4.  **View Logs and Cleanup:**
+    You can view the logs of the services with `docker-compose -f docker-compose.prod.yml logs -f`.
+    When finished, stop and remove the containers:
+    ```sh
+    docker-compose -f docker-compose.prod.yml down
+    ```
 
 ---
 
@@ -120,3 +148,9 @@ Use the [Interactive Docs](http://localhost:8000/docs) to follow this flow:
 | Testing          | Pytest, HTTPX, pytest-asyncio   |
 | Containerization | Docker, docker-compose          |
 
+---
+
+**Authors:**
+*   👨‍💻 Agape Ioan, Data Engineer
+*   👨‍💻 Munteanu Daniela, Data Engineer
+*   👨‍💻 Uliuliuc Serafim, Data Engineer
